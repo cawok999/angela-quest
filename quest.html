@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Анжела ❤️ // Глава 1: Детектив в Пангодах</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #ffc0cb; /* Розовый фон */
+            color: #4a4a4a;
+            font-family: monospace;
+            overflow: hidden; user-select: none;
+            background-image: radial-gradient(#ffb6c1 20%, transparent 20%), radial-gradient(#ffb6c1 20%, transparent 20%);
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+        }
+
+        #app {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100dvh; width: 100vw; padding: 2vh 0; box-sizing: border-box;
+        }
+
+        #game-container {
+            width: 95%; max-width: 800px; height: 100%;
+            display: flex; flex-direction: column;
+            background: rgba(255, 255, 255, 0.95); 
+            border: 3px solid #ff69b4;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
+            position: relative; z-index: 10;
+        }
+
+        .header-status {
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 2px solid #ff69b4;
+            padding: 15px 20px; font-size: 16px; font-weight: bold;
+            background: #fff0f5; flex-shrink: 0;
+            border-radius: 12px 12px 0 0;
+            color: #ff1493;
+        }
+
+        .inv-btn-header {
+            background: #ff69b4; color: white; border: none;
+            cursor: pointer; padding: 8px 15px; font-family: inherit; font-size: 14px;
+            border-radius: 20px; font-weight: bold;
+            transition: 0.2s;
+        }
+        .inv-btn-header:hover { background: #ff1493; transform: scale(1.05); }
+
+        .art-container {
+            flex: 0 0 250px; display: flex; justify-content: center; align-items: center;
+            border-bottom: 2px dashed #ffb6c1; background: #ffe4e1;
+            overflow: hidden; padding: 10px; position: relative;
+        }
+
+        .art-image {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .content-area {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; padding: 20px; gap: 15px; position: relative;
+        }
+
+        .text-box {
+            flex: 1; overflow-y: auto; font-size: 18px; line-height: 1.6;
+            padding-right: 15px; color: #333;
+            padding-bottom: 20px;
+        }
+        
+        .text-box::-webkit-scrollbar { width: 8px; }
+        .text-box::-webkit-scrollbar-track { background: #fff0f5; border-radius: 4px; }
+        .text-box::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 4px; }
+
+        .choices {
+            flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
+            padding-top: 15px; border-top: 2px solid #ffb6c1;
+        }
+
+        .choice-btn {
+            background: white; color: #ff1493; border: 2px solid #ffb6c1;
+            padding: 12px 20px; font-family: monospace;
+            font-size: 16px; cursor: pointer; text-align: left;
+            transition: all 0.2s ease; border-radius: 8px; font-weight: bold;
+        }
+
+        .choice-btn:hover { 
+            background: #fff0f5; border-color: #ff69b4;
+            transform: translateX(5px);
+        }
+
+        #init-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffc0cb; display: flex; justify-content: center; align-items: center;
+            z-index: 1000; flex-direction: column; text-align: center; padding: 20px; box-sizing: border-box;
+            background-image: radial-gradient(#ffb6c1 20%, transparent 20%), radial-gradient(#ffb6c1 20%, transparent 20%);
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+        }
+
+        .init-btn {
+            margin-top: 40px; padding: 15px 50px; font-size: 24px; color: white; background: #ff69b4;
+            border: none; border-radius: 30px; cursor: pointer; font-family: monospace;
+            font-weight: bold; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+        }
+        .init-btn:hover { background: #ff1493; transform: scale(1.05); }
+
+        #audio-status { position: absolute; top: 10px; left: 10px; font-size: 12px; color: #ff1493; z-index: 100; font-weight: bold;}
+        
+        #inventory-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; max-width: 500px; background: white;
+            border: 3px solid #ff69b4; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 3000; padding: 25px; display: none;
+            color: #333; font-family: monospace;
+        }
+        #inventory-modal h2 { color: #ff1493; margin-top: 0; text-align: center; border-bottom: 2px dashed #ffb6c1; padding-bottom: 10px;}
+        #inventory-modal ul { list-style: none; padding: 0; }
+        #inventory-modal li { margin-bottom: 15px; padding-bottom: 10px; line-height: 1.5; font-size: 16px;}
+        .close-inv-btn { 
+            background: #ff69b4; color: white; border: none; border-radius: 8px;
+            padding: 12px; width: 100%; cursor: pointer; font-family: inherit; font-weight: bold;
+            font-size: 16px; margin-top: 10px; transition: 0.2s;
+        }
+        .close-inv-btn:hover { background: #ff1493; }
+
+        @media (max-width: 768px) {
+            #app { padding: 0; }
+            #game-container { width: 100%; height: 100dvh; border-radius: 0; border: none; }
+            .header-status { border-radius: 0; }
+            .art-container { flex: 0 0 200px; }
+            .text-box { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="audio-status">МУЗЫКА: ВЫКЛ</div>
+
+    <div id="init-screen">
+        <h1 style="color: #ff1493; font-size: 40px; margin-bottom: 10px; text-shadow: 2px 2px 0px white;">АНЖЕЛА ❤️</h1>
+        <h3 style="color: #ff69b4; font-size: 20px; background: white; padding: 5px 15px; border-radius: 15px;">Загадка пропавшего ТГ-Премиума</h3>
+        <button class="init-btn" onclick="startGame()">НАЧАТЬ</button>
+    </div>
+
+    <!-- ИНВЕНТАРЬ -->
+    <div id="inventory-modal">
+        <h2>Моя сумочка</h2>
+        <ul id="inventory-list">
+            <li>🎸 Электрогитара (оплачена на год за 1060 руб)</li>
+            <li>💊 Секретные белые капсулы для внимания</li>
+        </ul>
+        <button class="close-inv-btn" onclick="toggleInventory()">Закрыть</button>
+    </div>
+
+    <div id="app">
+        <div id="game-container" style="display: none;">
+            <div class="header-status">
+                <span id="loc-display">ЛОКАЦИЯ: Школа №1</span>
+                <button class="inv-btn-header" onclick="toggleInventory()">Сумочка</button>
+            </div>
+            
+            <div class="art-container" id="art">
+                <!-- Сюда будут подгружаться картинки -->
+                <img id="scene-image" class="art-image" src="" alt="Сцена" style="display: none;">
+                <!-- Заглушка, если картинки нет -->
+                <div id="art-placeholder" style="color: #ffb6c1; font-size: 40px; font-weight: bold;">(Тут будет картинка)</div>
+            </div>
+            
+            <div class="content-area">
+                <div class="text-box" id="text"></div>
+                <div class="choices" id="choices"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
+    let currentBGM = null;
+    let audioPlayer = new Audio();
+    audioPlayer.loop = true;
+
+    // --- СЮЖЕТ И ЛОГИКА ---
+    // ЗДЕСЬ ПРОПИСЫВАЮТСЯ ПУТИ К КАРТИНКАМ И МУЗЫКЕ!
+    // Замени 'img/cover.jpg' на реальное название файла в твоей папке img
+    const scenes = {
+        start: {
+            bgm: '', // ПРИМЕР: Название файла с музыкой в папке audio
+            loc: 'Класс Биологии', 
+            image: '', // ПРИМЕР: Название картинки в папке img
+            text: [
+                "Утро в Пангодах началось типично. Ты сидишь на своей любимой одиночной парте третьего ряда.",
+                "География отменена, но радоваться рано. В местном ТГ-канале «Пангоды любят» снова кто-то слил фотки.",
+                "Слухи распространяются быстрее, чем запах от того чела в туалете.",
+                "Ты подозреваешь Марселя. Этот пикми вечно лезет куда не надо.",
+                "Внезапно на телефон приходит сообщение от Саши (Рафаэля Амброзиуса Кусто). Он пишет: 'СРОЧНО! Встречаемся на крыше шестиэтажки. Я нашел улику!'"
+            ],
+            choices: [
+                { text: "Пойти на крышу (а вдруг там замок?)", next: 'roof' },
+                { text: "Пойти в туалет покурить сигу, найденную в подъезде", next: 'toilet' }
+            ]
+        },
+        roof: {
+            bgm: '',
+            loc: 'Крыша шестиэтажки',
+            image: '',
+            text: [
+                "Ты поднимаешься на самый верх.",
+                "Естественно, на двери висит огромный ржавый замок.",
+                "Рядом стоит Саша. Он выглядит так, будто готовится к сложной операции по удалению аппендикса.",
+                "— Я забыл про замок, — выдает он с каменным лицом. — Но я знаю, кто сливает инфу. Это...",
+                "Не успевает он договорить, как снизу раздается голос."
+            ],
+            choices: [
+                { text: "Затаиться и послушать", next: 'eavesdrop' }
+            ]
+        },
+        toilet: {
+            bgm: '',
+            loc: 'Женский туалет',
+            image: '',
+            text: [
+                "Ты заходишь в туалет. Как обычно, накурено так, что можно вешать топор.",
+                "Достаешь ту самую сигарету. Внезапно из кабинки выходит Даша.",
+                "— О, Анжела! А я тут кошку свою вспоминала, — говорит она.",
+                "Она явно что-то скрывает."
+            ],
+            choices: [
+                { text: "Спросить про сливы в ТГ", next: 'dasha_interrogate' }
+            ]
+        },
+        eavesdrop: {
+             bgm: '',
+            loc: 'Крыша шестиэтажки',
+            image: '', // Картинки нет, будет заглушка
+            text: [
+                 "Снизу слышатся шаги. Кто-то тяжело дышит.",
+                 "Это Максим. Он ругается по телефону:",
+                 "— Да, я скинул админу! Пусть все знают!"
+            ],
+             choices: [
+                { text: "Кинуть в него Bluetooth-адаптером Саши", next: 'throw_bt' },
+                { text: "Снять на видео как доказательство", next: 'record_video' }
+            ]
+        },
+        dasha_interrogate: {
+            bgm: '',
+            loc: 'Женский туалет',
+            image: '',
+            text: [
+                "— Слушай, Даш, ты не в курсе, кто канал ведет? — спрашиваешь ты.",
+                "Даша мнется: — Ну... Сава там админ теперь. Но он сам в шоке от сливов.",
+                "Кажется, нужно поговорить с Савелием."
+            ],
+            choices: [
+                 { text: "Написать Савелию", next: 'message_sava' }
+            ]
+        },
+         throw_bt: {
+            loc: 'Крыша шестиэтажки',
+            text: [
+                "Ты выхватываешь у Саши странный Bluetooth-адаптер 4.0 и кидаешь вниз.",
+                "Попадание прямо в цель! Максим роняет телефон.",
+                "Справедливость восторжествовала. Вы с Сашей идете пить чай."
+            ],
+            choices: [
+                { text: "Конец демо-версии!", next: 'start' }
+            ]
+        },
+        record_video: {
+            loc: 'Крыша шестиэтажки',
+            text: [
+                "Ты достаешь телефон и аккуратно снимаешь признание Максима.",
+                "Теперь у вас есть доказательства! ТГ-канал 'Пангоды любят' будет очищен от клеветы.",
+                "Саша довольно кивает. 'Почти как операция на сердце', — говорит он."
+            ],
+             choices: [
+                { text: "Конец демо-версии!", next: 'start' }
+            ]
+        },
+         message_sava: {
+            loc: 'Коридор школы',
+            text: [
+                 "Ты пишешь Савелию. Он обещает удалить все сливы и забанить Марселя для профилактики.",
+                 "Дело раскрыто, даже не успев начаться. Ты настоящий нейтральный чувачок."
+            ],
+             choices: [
+                { text: "Конец демо-версии!", next: 'start' }
+            ]
+        }
+    };
+
+    function initAudio() {
+        // Убираем инициализацию сложного Web Audio API, используем простой HTML5 Audio
+        document.getElementById('audio-status').innerText = 'МУЗЫКА: ВКЛ';
+    }
+
+    function playBGM(trackPath) {
+        if (!trackPath) {
+            audioPlayer.pause();
+            return;
+        }
+        
+        // Если трек тот же самый, не перезапускаем
+        if (currentBGM === trackPath) return;
+
+        currentBGM = trackPath;
+        audioPlayer.src = trackPath;
+        
+        // Пытаемся воспроизвести (браузеры могут блокировать автоплей до первого клика)
+        audioPlayer.play().catch(e => {
+            console.log("Автоплей заблокирован браузером. Музыка заиграет после клика.");
+        });
+    }
+
+    function toggleInventory() {
+        const modal = document.getElementById('inventory-modal');
+        modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+    }
+
+    function startGame() {
+        const screen = document.getElementById('init-screen');
+        if (screen) screen.style.display = 'none';
+        
+        const container = document.getElementById('game-container');
+        if (container) container.style.display = 'flex';
+        
+        initAudio();
+        renderScene('start');
+    }
+
+    function renderScene(sceneId) {
+        const scene = scenes[sceneId];
+        
+        document.getElementById('loc-display').innerText = 'ЛОКАЦИЯ: ' + scene.loc;
+        
+        // Управление музыкой
+        if (scene.bgm) {
+            playBGM(scene.bgm);
+        }
+        
+        // Управление картинкой
+        const imgElement = document.getElementById('scene-image');
+        const placeholder = document.getElementById('art-placeholder');
+        
+        if (scene.image) {
+            imgElement.src = scene.image;
+            imgElement.style.display = 'block';
+            placeholder.style.display = 'none';
+            // Обработчик ошибки загрузки картинки
+            imgElement.onerror = function() {
+                imgElement.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.innerText = "(Картинка не найдена: " + scene.image + ")";
+                placeholder.style.fontSize = "16px";
+            };
+        } else {
+            imgElement.style.display = 'none';
+            placeholder.style.display = 'block';
+            placeholder.innerText = "(Тут будет картинка)";
+            placeholder.style.fontSize = "20px";
+        }
+
+        const choicesDiv = document.getElementById('choices');
+        const textDiv = document.getElementById('text');
+        
+        choicesDiv.innerHTML = '';
+        textDiv.innerHTML = '';
+
+        // Вывод текста
+        scene.text.forEach(paragraph => {
+            let pNode = document.createElement('p');
+            pNode.style.margin = "0 0 15px 0";
+            pNode.innerHTML = paragraph;
+            textDiv.appendChild(pNode);
+        });
+
+        // Вывод кнопок
+        scene.choices.forEach(choice => {
+            let btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerHTML = choice.text;
+            btn.onclick = () => { 
+                // Гарантируем запуск аудио при первом клике (обход защиты браузеров)
+                if (audioPlayer.paused && currentBGM) audioPlayer.play();
+                renderScene(choice.next);
+            };
+            choicesDiv.appendChild(btn);
+        });
+        
+        textDiv.scrollTop = 0;
+    }
+</script>
+</body>
+</html>
