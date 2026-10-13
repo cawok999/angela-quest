@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Анжела ❤️ // Эпические Пангоды: Ultimate Edition</title>
+    <style>
+        :root {
+            --pink-primary: #ff1493;
+            --pink-light: #ff69b4;
+            --pink-soft: #ffe4ef;
+            --pink-pale: #fff5f9;
+            --dark-bg: #120617;
+            --text-main: #221528;
+            --accent-purple: #8a2be2;
+            --danger-red: #ff2a55;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+
+        /* Анимированный Canvas фон */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none;
+        }
+
+        /* Декоративная виньетка */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, transparent 55%, rgba(10, 2, 15, 0.75) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        #app {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100dvh; width: 100vw; padding: 1.5vh 1.5vw;
+        }
+
+        /* ГЛАВНЫЙ КОНТЕЙНЕР ИГРЫ */
+        #game-container {
+            width: 100%; max-width: 1440px; height: 100%;
+            display: flex; flex-direction: column;
+            background: rgba(255, 250, 253, 0.95);
+            border: 3px solid var(--pink-primary);
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 70px rgba(255, 20, 147, 0.45),
+                0 0 25px rgba(255, 105, 180, 0.3);
+            position: relative; overflow: hidden;
+            backdrop-filter: blur(16px);
+            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+            animation: containerPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #game-container.boss-mode {
+            border-color: var(--danger-red);
+            box-shadow: 0 20px 80px rgba(255, 42, 85, 0.65), 0 0 35px rgba(255, 0, 0, 0.4);
+        }
+
+        @keyframes containerPop {
+            0% { transform: scale(0.95) translateY(15px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Эффект тряски экрана */
+        .shake-screen {
+            animation: screenShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes screenShake {
+            10%, 90% { transform: translate3d(-4px, 2px, 0); }
+            20%, 80% { transform: translate3d(6px, -3px, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 4px, 0); }
+            40%, 60% { transform: translate3d(8px, -2px, 0); }
+        }
+
+        /* ШАПКА ИГРЫ */
+        .header-status {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            border-bottom: 3px solid rgba(255, 20, 147, 0.25);
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ffe0f0 0%, #fff5fa 50%, #ffe6f2 100%);
+            flex-shrink: 0; position: relative; z-index: 20;
+        }
+
+        /* Полоска прогресса печати */
+        #reading-progress {
+            position: absolute; bottom: -3px; left: 0; height: 3px; width: 0%;
+            background: linear-gradient(90deg, var(--pink-primary), var(--accent-purple), var(--pink-light));
+            transition: width 0.2s ease-out; z-index: 5;
+        }
+
+        .loc-badge {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 17px; font-weight: 800; color: #b0106a;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 14px; border-radius: 14px;
+            border: 2px solid rgba(255, 105, 180, 0.4);
+            box-shadow: 0 4px 12px rgba(255, 20, 147, 0.08);
+            min-width: 0; flex: 1;
+        }
+
+        #loc-display {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.25;
+        }
+
+        .header-controls {
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+
+        .header-btn {
+            background: linear-gradient(135deg, var(--pink-primary), var(--pink-light));
+            color: white; border: 2px solid #fff;
+            cursor: pointer; padding: 9px 18px; font-family: inherit; font-size: 15px;
+            border-radius: 30px; font-weight: 800;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 6px; position: relative;
+        }
+        .header-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.5);
+        }
+        .header-btn:active { transform: scale(0.96); }
+
+        .header-btn.muted {
+            background: linear-gradient(135deg, #5c4b63, #7a6882);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .inv-count-badge {
+            background: #fff; color: var(--pink-primary);
+            font-size: 12px; font-weight: 900;
+            width: 20px; height: 20px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* ОСНОВНАЯ СЕТКА */
+        .main-layout {
+            display: flex; flex: 1; overflow: hidden; flex-direction: row;
+        }
+
+        /* БЛОК КАРТИНКИ */
+        .art-container {
+            flex: 0 0 450px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-right: 3px dashed rgba(255, 105, 180, 0.5);
+            background: radial-gradient(circle at center, #2e1636 0%, #15081a 100%);
+            overflow: hidden; padding: 22px; position: relative;
+        }
+
+        .art-frame {
+            position: relative; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            animation: floatImage 6s ease-in-out infinite;
+        }
+
+        .art-image {
+            max-width: 100%; max-height: 72vh; object-fit: contain;
+            border-radius: 16px; border: 3px solid var(--pink-light);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 105, 180, 0.4);
+            cursor: zoom-in; transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .art-image:hover { transform: scale(1.02); }
+
+        .art-hint {
+            position: absolute; bottom: 10px; right: 14px;
+            background: rgba(0, 0, 0, 0.65); color: #fff;
+            font-size: 11px; padding: 4px 10px; border-radius: 10px;
+            pointer-events: none; backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes floatImage {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* БЛОК КОНТЕНТА И ТЕКСТА */
+        .content-area {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; padding: 28px 36px; gap: 18px; position: relative;
+            background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+        }
+
+        .text-box {
+            flex: 1; overflow-y: auto; font-size: 19.5px; line-height: 1.75;
+            padding-right: 16px; color: var(--text-main);
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .text-box p {
+            margin: 0 0 18px 0;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            border-left: 5px solid #ffd1e6;
+            box-shadow: 0 4px 14px rgba(255, 20, 147, 0.05);
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        .text-box p.dialogue-line {
+            background: linear-gradient(135deg, #fff5fa 0%, #ffffff 100%);
+            border-left: 5px solid var(--pink-primary);
+            box-shadow: 0 6px 18px rgba(255, 20, 147, 0.08);
+        }
+
+        .text-box p.romance-line {
+            background: linear-gradient(135deg, #fff0f8 0%, #fdf5ff 100%);
+            border-left: 5px solid #ff69b4;
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.14);
+        }
+
+        .text-box::-webkit-scrollbar { width: 9px; }
+        .text-box::-webkit-scrollbar-track { background: #fff0f6; border-radius: 8px; }
+        .text-box::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, var(--pink-light), var(--pink-primary)); 
+            border-radius: 8px;
+        }
+
+        /* КНОПКИ ВЫБОРА */
+        .choices {
+            flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;
+            padding-top: 14px; border-top: 2px solid var(--pink-soft);
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #fff7fb 100%);
+            color: #b0106a; border: 2.5px solid #ff9ec9;
+            padding: 16px 24px; font-family: inherit;
+            font-size: 17.5px; cursor: pointer; text-align: left;
+            transition: all 0.2s ease;
+            border-radius: 16px; font-weight: 700;
+            position: relative; overflow: hidden;
+            display: none; opacity: 0;
+            box-shadow: 0 4px 12px rgba(255, 20, 147, 0.08);
+            animation: fadeInBtn 0.4s ease forwards;
+        }
+
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #fff0f7 0%, #ffe3f1 100%);
+            border-color: var(--pink-primary); color: var(--pink-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.2);
+        }
+        .choice-btn:active { transform: scale(0.98); }
+
+        .choice-btn.death-btn {
+            color: var(--danger-red); border-color: var(--danger-red);
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe6ea 100%);
+        }
+
+        .choice-btn.secret-btn {
+            color: var(--accent-purple); border-color: #b57cff;
+            background: linear-gradient(135deg, #fbf7ff 0%, #f2e6ff 100%);
+        }
+
+        @keyframes fadeInBtn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ПЛАВАЮЩАЯ КНОПКА ПРОПУСКА ПЕЧАТИ (Удобно под палец на телефоне и ПК!) */
+        #skip-btn {
+            position: fixed; bottom: 24px; right: 24px; z-index: 900;
+            background: linear-gradient(135deg, var(--pink-primary), var(--pink-light));
+            border: 2px solid #fff; color: #fff;
+            font-family: inherit; padding: 12px 22px; cursor: pointer; display: none;
+            font-size: 15px; border-radius: 30px; font-weight: 800;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeInBtn 0.3s ease forwards;
+        }
+        #skip-btn:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(255, 20, 147, 0.7); }
+        #skip-btn:active { transform: scale(0.95); }
+
+        /* СТАРТОВЫЙ ЭКРАН */
+        #init-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(45, 12, 54, 0.85) 0%, rgba(15, 5, 20, 0.96) 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; flex-direction: column; text-align: center; padding: 16px;
+            backdrop-filter: blur(10px); overflow-y: auto;
+        }
+
+        .init-box {
+            background: rgba(255, 255, 255, 0.96);
+            padding: 36px 32px; border-radius: 28px;
+            border: 4px solid var(--pink-primary);
+            box-shadow: 0 0 70px rgba(255, 20, 147, 0.6);
+            max-width: 620px; width: 100%;
+            animation: containerPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .init-cover {
+            width: 100%; max-height: 200px; object-fit: cover;
+            border-radius: 16px; border: 3px solid var(--pink-light);
+            margin-bottom: 16px; display: none;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.25);
+        }
+
+        .init-badge {
+            display: inline-block; background: var(--pink-soft); color: var(--pink-primary);
+            font-weight: 800; font-size: 12px; padding: 5px 14px; border-radius: 20px;
+            letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 10px;
+        }
+
+        .init-btn {
+            margin-top: 20px; padding: 18px 55px; font-size: 24px; color: white;
+            background: linear-gradient(45deg, var(--pink-primary), #d6006e, var(--pink-light));
+            border: 3px solid #fff; border-radius: 50px; cursor: pointer; font-family: inherit;
+            font-weight: 900; transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.5);
+            text-transform: uppercase; letter-spacing: 1.5px;
+        }
+        .init-btn:hover { transform: scale(1.05) translateY(-3px); }
+
+        /* МОДАЛКА ИНВЕНТАРЯ */
+        #modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 5, 20, 0.75); backdrop-filter: blur(6px);
+            z-index: 2999; display: none; opacity: 0; transition: opacity 0.25s ease;
+        }
+
+        #inventory-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 92%; max-width: 640px; background: #fff;
+            border: 4px solid var(--pink-primary); border-radius: 24px;
+            box-shadow: 0 25px 90px rgba(0, 0, 0, 0.7);
+            z-index: 3000; padding: 26px; display: none;
+            color: #333; max-height: 85dvh; overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #inventory-modal h2 { 
+            color: var(--pink-primary); margin: 0; text-align: center; 
+            border-bottom: 3px dashed #ffb6c1; padding-bottom: 14px; font-size: 24px;
+        }
+        #inventory-modal ul { 
+            list-style: none; padding: 0; margin-top: 16px; 
+            display: grid; grid-template-columns: 1fr; gap: 10px;
+        }
+        #inventory-modal li { 
+            padding: 14px 16px; line-height: 1.5; font-size: 16px; 
+            background: var(--pink-pale); border: 2px solid #ffd6e7; border-radius: 14px;
+        }
+        .close-inv-btn { 
+            background: linear-gradient(135deg, var(--pink-primary), var(--pink-light));
+            color: white; border: none; border-radius: 14px;
+            padding: 15px; width: 100%; cursor: pointer; font-family: inherit; font-weight: 800;
+            font-size: 18px; margin-top: 16px; text-transform: uppercase;
+        }
+
+        /* ЛАЙТБОКС ДЛЯ УВЕЛИЧЕНИЯ КАРТИНОК */
+        #lightbox-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 3, 14, 0.92); backdrop-filter: blur(10px);
+            z-index: 4000; display: none; justify-content: center; align-items: center;
+            cursor: zoom-out; padding: 16px;
+        }
+        #lightbox-img {
+            max-width: 96vw; max-height: 88dvh; object-fit: contain; border-radius: 14px;
+            border: 3px solid var(--pink-light);
+            box-shadow: 0 0 40px rgba(255, 20, 147, 0.5);
+        }
+
+        /* УВЕДОМЛЕНИЯ (ТОСТЫ) */
+        #toast-container {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 5000; display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none; width: 92%; max-width: 400px;
+        }
+        .toast {
+            background: rgba(28, 10, 36, 0.95); color: #fff;
+            border: 2px solid var(--pink-light); border-radius: 14px;
+            padding: 12px 16px; font-size: 14px; font-weight: 700;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.45);
+            display: flex; align-items: center; gap: 10px;
+            animation: toastIn 0.35s ease, toastOut 0.35s ease 2.8s forwards;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-15px); } }
+
+        /* ТЕГИ ИМЕНИ И ГЛИТЧ */
+        .name-tag { 
+            display: inline-block; color: #fff; font-weight: 800; 
+            background: linear-gradient(135deg, var(--pink-primary), #d4147a); 
+            padding: 2px 10px; border-radius: 7px; margin-right: 5px;
+            font-size: 0.92em;
+        }
+        .heart-tag {
+            display: inline-block; color: #d4147a; font-weight: 800;
+            background: #ffe6f2; padding: 2px 9px; border-radius: 6px;
+            border: 1px solid #ff9ec9; margin-right: 4px;
+        }
+        .glitch-text { 
+            display: inline-block; animation: textGlitch 1.8s infinite; 
+            color: var(--danger-red); font-weight: 900;
+        }
+        @keyframes textGlitch {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-1.5px, 1px); }
+            50% { transform: translate(1.5px, -1px); }
+            75% { transform: translate(-1px, -1px); }
+        }
+
+        .cursor {
+            display: inline-block; width: 9px; height: 20px; background-color: var(--pink-primary);
+            animation: blink 0.9s step-end infinite; vertical-align: text-bottom; margin-left: 4px;
+            border-radius: 2px;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ (ДЛЯ ТЕЛЕФОНОВ) */
+        @media (max-width: 980px) {
+            #app { padding: 0; }
+            #game-container { width: 100%; height: 100dvh; border-radius: 0; border: none; }
+            
+            .header-status { padding: 10px 12px; gap: 8px; }
+            .loc-badge { font-size: 12.5px; padding: 6px 10px; border-radius: 10px; gap: 5px; }
+            .header-controls { gap: 6px; }
+            .header-btn { padding: 8px 12px; font-size: 13px; border-radius: 20px; gap: 4px; }
+            .btn-label-mobile-hide { display: none; }
+
+            /* На телефоне вся область под шапкой плавно скроллится пальцем */
+            .main-layout { 
+                flex-direction: column; 
+                overflow-y: auto; 
+                -webkit-overflow-scrolling: touch;
+            }
+            .art-container { 
+                flex: 0 0 auto; height: 220px; border-right: none; 
+                border-bottom: 3px dashed rgba(255, 105, 180, 0.4); padding: 12px;
+            }
+            .art-frame { animation: none; }
+            .art-image { max-height: 192px; }
+            
+            .content-area { 
+                overflow: visible; padding: 16px 14px 90px 14px; gap: 14px; flex: 1 0 auto;
+            }
+            .text-box { 
+                overflow: visible; font-size: 16.5px; line-height: 1.65; padding-right: 0; padding-bottom: 10px;
+            }
+            .text-box p { padding: 14px 16px; margin-bottom: 14px; border-radius: 14px; }
+            
+            .choice-btn { font-size: 16px; padding: 16px 18px; border-radius: 14px; }
+            #skip-btn { bottom: 16px; right: 16px; padding: 12px 20px; font-size: 14px; }
+            .init-box { padding: 24px 18px; border-radius: 22px; }
+            .init-btn { padding: 16px 36px; font-size: 20px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="crt-overlay"></div>
+    <div id="toast-container"></div>
+
+    <!-- Плавающая кнопка пропуска печати (всегда под рукой на телефоне и ПК) -->
+    <button id="skip-btn" onclick="skipTyping()">Пропустить печать ⏩</button>
+
+    <!-- Лайтбокс для зума картинок -->
+    <div id="lightbox-modal" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Увеличенная сцена">
+    </div>
+
+    <div id="init-screen">
+        <div class="init-box">
+            <img id="init-cover-img" class="init-cover" src="img/start_screen.jpg" alt="Обложка" onload="this.style.display='block'" onerror="this.style.display='none'">
+            <div class="init-badge">✨ Visual Novel // Ultimate Edition ✨</div>
+            <h1 style="color: var(--pink-primary); font-size: clamp(32px, 6vw, 54px); margin: 4px 0 8px 0; text-shadow: 3px 3px 0px var(--pink-soft); text-transform: uppercase;">Анжела ❤️</h1>
+            <h3 style="color: #b0106a; font-size: clamp(16px, 3vw, 22px); margin: 0 0 18px 0;">Глава 1: Эпические Пангоды</h3>
+            <p style="font-size: 15.5px; color: #55445c; max-width: 540px; margin: 0 auto 14px auto; line-height: 1.55;">
+                Добро пожаловать в интерактивный абсурд Пангод. Музыка и звуковые эффекты включатся автоматически при старте! Нажимай на картинки, чтобы приблизить их, проверяй сумочку и отыщи все <b>4 основные</b> и <b>2 секретные</b> концовки.
+            </p>
+            <button class="init-btn" onclick="startGame()">▶ НАЧАТЬ ИГРУ</button>
+        </div>
+    </div>
+
+    <div id="modal-backdrop" onclick="toggleInventory()"></div>
+    <div id="inventory-modal">
+        <h2>Сумочка Анжелы Ахметовой 👜</h2>
+        <ul id="inventory-list">
+            <li>🎸 <b>Электрогитара</b> <br><small>Оплачена на год за 1060 руб. в местном ДК. Идеальное оружие против нормисов и маразматиков. Струны звенят яростью.</small></li>
+            <li>💊 <b>Секретные белые капсулы</b> <br><small>Для внимания. Главное не перепутать с коричневыми для гемоглобина, а то раздует как шар, а мама опять будет орать и угрожать молотком.</small></li>
+            <li>📱 <b>Смартфон</b> <br><small>Слава богам, он еще жив и не разбит маминым молотком. ВК мессенджер тупит, переключая аккаунты по 30 минут, но в закрепленных чатах почему-то висит диалог с Сашей.</small></li>
+            <li>🚬 <b>Сигарета из пачки</b> <br><small>Найденная на грязном полу в подъезде. Почти докурена до фильтра, крепка как сука, горло дерет, но бесплатный лут есть лут.</small></li>
+            
+            <!-- Скрытые рофло-предметы -->
+            <li id="inv-keychain" style="display: none;">🐱 <b>Брелок Котика</b> <br><small>Подарок от Саши 'на сдачу'. Когда он его протягивал, его пальцы слегка дрожали. Висит на молнии и странно греет душу.</small></li>
+            <li id="inv-cola" style="display: none;">🥤 <b>Злая Кола (2 Литра)</b> <br><small>Теплая, выдохшаяся, найдена на самом дне мусорки женского туалета. Жутко липкая, но идеальна для метания во врагов.</small></li>
+            <li id="inv-drawing" style="display: none;">📄 <b>Порванный плакат Crystal Castles</b> <br><small>Кто-то безжалостно разорвал его. Склеен скотчем. Излучает мощнейшую ауру невероятного, концентрированного кринжа.</small></li>
+        </ul>
+        <button class="close-inv-btn" onclick="toggleInventory()">Закрыть сумочку</button>
+    </div>
+
+    <div id="app">
+        <div id="game-container" style="display: none;">
+            <div class="header-status">
+                <div class="loc-badge">
+                    <span>📍</span>
+                    <span id="loc-display">ЛОКАЦИЯ: ???</span>
+                </div>
+                <div class="header-controls">
+                    <button id="audio-btn" class="header-btn" onclick="toggleAudio()">
+                        <span id="audio-icon">🔊</span>
+                        <span id="audio-text" class="btn-label-mobile-hide">ЗВУК</span>
+                    </button>
+                    <button class="header-btn" onclick="toggleInventory()">
+                        <span>👜</span>
+                        <span class="btn-label-mobile-hide">Сумочка</span>
+                        <span class="inv-count-badge" id="inv-count">4</span>
+                    </button>
+                </div>
+                <div id="reading-progress"></div>
+            </div>
+            
+            <div class="main-layout" id="main-scroll-container">
+                <div class="art-container" id="art">
+                    <div class="art-frame">
+                        <img id="scene-image" class="art-image" src="" alt="Сцена" style="display: none;" onclick="openLightbox(this.src)">
+                    </div>
+                    <div class="art-hint" id="art-zoom-hint">🔍 Нажми на фото для увеличения</div>
+                    <div id="art-placeholder" style="color: #ffb6c1; font-size: 18px; font-weight: bold; text-align: center; padding: 20px; display: none;"></div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-box" id="text"></div>
+                    <div class="choices" id="choices"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- ФОНОВАЯ АНИМАЦИЯ ЧАСТИЦ ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 38; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 14 + 6,
+            speedY: Math.random() * 0.7 + 0.25,
+            speedX: (Math.random() - 0.5) * 0.5,
+            opacity: Math.random() * 0.4 + 0.15,
+            type: Math.random() > 0.35 ? '❤' : '❄'
+        });
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.font = `${p.size}px sans-serif`;
+            ctx.fillStyle = p.type === '❤' 
+                ? `rgba(255, 20, 147, ${p.opacity})` 
+                : `rgba(255, 220, 245, ${p.opacity})`;
+            ctx.fillText(p.type, p.x, p.y);
+            p.y -= p.speedY;
+            p.x += Math.sin(p.y * 0.02) * 0.3 + p.speedX;
+            if (p.y < -20) {
+                p.y = canvas.height + 20;
+                p.x = Math.random() * canvas.width;
+            }
+        });
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // --- СИНТЕЗАТОР ЗВУКОВ ИНТЕРФЕЙСА (WEB AUDIO API) ---
+    let audioCtx = null;
+    function playUISound(type) {
+        if (!audioEnabled) return;
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520, now);
+                osc.frequency.exponentialRampToValueAtTime(780, now + 0.06);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                osc.start(now); osc.stop(now + 0.06);
+            } else if (type === 'item') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.setValueAtTime(880, now + 0.09);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+                osc.start(now); osc.stop(now + 0.26);
+            } else if (type === 'danger') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.linearRampToValueAtTime(90, now + 0.22);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.start(now); osc.stop(now + 0.22);
+            }
+        } catch (e) {}
+    }
+
+    // --- ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ (ТОСТЫ) ---
+    function showToast(message, icon = '✨') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<span style="font-size:20px">${icon}</span><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+    }
+
+    // --- ЛАЙТБОКС КАРТИНОК ---
+    function openLightbox(src) {
+        if (!src) return;
+        playUISound('click');
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox-modal').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox-modal').style.display = 'none';
+    }
+
+    // --- НАДЕЖНЫЙ АУДИОПЛЕЕР С БЕЗОПАСНЫМ КРОССФЕЙДОМ ---
+    let currentBGM = null;
+    let audioPlayer1 = new Audio();
+    let audioPlayer2 = new Audio();
+    let activePlayer = audioPlayer1;
+    let inactivePlayer = audioPlayer2;
+    audioPlayer1.loop = true;
+    audioPlayer2.loop = true;
+    let audioEnabled = false;
+    let crossfadeTimer = null;
+
+    let isTyping = false;
+    let skipRequested = false;
+    let typeInterval = null;
+    let currentParagraphs = [];
+    let currentChoicesData = [];
+    let totalParagraphsInScene = 1;
+    
+    let lastCheckpoint = 'start';
+    
+    // Флаги предметов
+    let hasKeychain = false;
+    let hasCola = false;
+    let hasDrawing = false;
+
+    function updateInventoryBadge() {
+        let count = 4 + (hasKeychain ? 1 : 0) + (hasCola ? 1 : 0) + (hasDrawing ? 1 : 0);
+        document.getElementById('inv-count').innerText = count;
+    }
+
+    function resetSpecialItems() {
+        hasKeychain = false;
+        hasCola = false;
+        hasDrawing = false;
+        document.getElementById('inv-keychain').style.display = 'none';
+        document.getElementById('inv-cola').style.display = 'none';
+        document.getElementById('inv-drawing').style.display = 'none';
+        updateInventoryBadge();
+    }
+
+    function toggleAudio(forceEnable = false) {
+        const btn = document.getElementById('audio-btn');
+        const icon = document.getElementById('audio-icon');
+        const text = document.getElementById('audio-text');
+
+        if (audioEnabled && !forceEnable) {
+            if (crossfadeTimer) clearInterval(crossfadeTimer);
+            activePlayer.pause();
+            inactivePlayer.pause();
+            audioEnabled = false;
+            icon.innerText = "🔇";
+            text.innerText = "ВЫКЛ";
+            btn.classList.add('muted');
+        } else {
+            audioEnabled = true;
+            if (activePlayer.src && activePlayer.src !== window.location.href) {
+                try { activePlayer.volume = 1; } catch(e) {}
+                activePlayer.play().catch(e => {});
+            }
+            icon.innerText = "🔊";
+            text.innerText = "ЗВУК";
+            btn.classList.remove('muted');
+            playUISound('click');
+        }
+    }
+
+    function playBGM(trackPath) {
+        if (crossfadeTimer) {
+            clearInterval(crossfadeTimer);
+            crossfadeTimer = null;
+        }
+
+        if (!trackPath) {
+            activePlayer.pause();
+            inactivePlayer.pause();
+            currentBGM = null;
+            return;
+        }
+
+        if (currentBGM === trackPath) {
+            if (audioEnabled && activePlayer.paused) {
+                activePlayer.play().catch(e => {});
+            }
+            return;
+        }
+
+        currentBGM = trackPath;
+
+        if (!audioEnabled) {
+            activePlayer.src = trackPath;
+            return;
+        }
+
+        // Мгновенно меняем местами ссылки на плееры, чтобы исключить гонку при быстрых кликах
+        let oldPlayer = activePlayer;
+        activePlayer = inactivePlayer;
+        inactivePlayer = oldPlayer;
+
+        activePlayer.src = trackPath;
+        let volumeSupported = true;
+        try {
+            activePlayer.volume = 0;
+        } catch (e) {
+            volumeSupported = false;
+        }
+
+        activePlayer.play().catch(e => {});
+
+        if (!volumeSupported) {
+            inactivePlayer.pause();
+            return;
+        }
+
+        let step = 0;
+        crossfadeTimer = setInterval(() => {
+            step++;
+            let progress = Math.min(1, step / 12);
+            try {
+                activePlayer.volume = progress;
+                inactivePlayer.volume = Math.max(0, 1 - progress);
+            } catch (e) {
+                inactivePlayer.pause();
+                clearInterval(crossfadeTimer);
+                crossfadeTimer = null;
+                return;
+            }
+            if (progress >= 1) {
+                inactivePlayer.pause();
+                clearInterval(crossfadeTimer);
+                crossfadeTimer = null;
+            }
+        }, 45);
+    }
+
+    const scenes = {
+        start: {
+            bgm: 'audio/school_ambience.mp3', 
+            loc: 'Школа №1 — Урок Обществознания', 
+            image: 'img/class.jpg',
+            checkpoint: true,
+            onEnter: () => {
+                resetSpecialItems();
+            },
+            text: [
+                "Утро в заснеженных Пангодах началось максимально депрессивно и тяжело, пробивая очередное дно экзистенциального отчаяния. Ты проснулась ровно в 6:00 утра от того, что у соседей сверху, словно бензопила 'Дружба', начал неистово вибрировать гребаный будильник. И не просто один раз — он вибрировал ровно каждые пять минут на протяжении получаса, методично просверливая твой мозг так, что эта омерзительная вибрация до сих пор отдается где-то глубоко в подкорке. Ты еле-еле, с титаническим усилием стянула свое тяжелое тело с теплой кровати, механически закинулась своими секретными белыми капсулами для внимания (в этот момент главной задачей было спросонья не перепутать их с коричневыми таблетками для гемоглобина, от которых моментально пухнешь, как воздушный шар, а мать потом читает многочасовые лекции про диету и внешний вид) и поплелась по адскому, колючему морозу в первую школу, тихо проклиная тот день, когда вообще родилась на этом холодном севере.",
+                "И вот, ты, Анжела Ахметова, сидишь на своей любимой, спасительной одиночной парте на самом заднем ряду второго варианта. Одиночные парты — это вообще лучшее, что когда-либо придумало человечество и гнилая система образования. Никто не дышит тебе в шею перегаром от столовских сосисок с макаронами, никто не дергает за рукав с жалким нытьем 'дай списать', и можно абсолютно спокойно существовать в своем уютном, отрешенном внутреннем мире, слушая лишь мерный, убаюкивающий гул старых чугунных радиаторов отопления и размышляя о том, почему твой индийский Spotify Premium опять слетел в самый неподходящий момент из-за кривого VPN.",
+                "Учительница по обществознанию нудным, монотонным, убаюкивающим голосом зачитывает вопросы теста по экономике: «К расходной части государственного бюджета относится...». Кто-то сзади на полном серьезе, с умным видом шепчет соседу по парте полный, непроходимый бред про 'хранителя очага' и 'индустриальное общество', видимо, перепутав исторические эпохи с обществознанием. Тебе абсолютно, кристально <span class='name-tag'>индифферентно</span>. Этот тест ты все равно написала максимум на двойку (набрала всего 12 жалких баллов из нужных для порога), потому что экономика — это, откровенно говоря, чистейшие абьюзивные отношения, в которых государство всегда право, а ты всегда должна. Географию и то сдавать в разы проще, если бы только истеричная географичка не угрожала всем подряд физической расправой за один только факт выбора её предмета на ОГЭ.",
+                "Куда важнее, острее и больнее то, что в местном ТГ-канале «Пангоды любят» (который, к слову, уже один раз сносили за жесткие нарушения, но он, как Феникс из дерьма, восстал снова) кто-то опять слил огромную кучу свежих, компрометирующих фоток одноклассников. Всех подряд, исподтишка, в самых нелепых, уязвимых ситуациях. Слухи по этому маленькому, тесному северному поселку расползаются быстрее, чем зловонный запах из мужского туалета на втором этаже (в который ты вообще боишься заходить даже под дулом пистолета, потому что там однажды один чел из параллели на полном серьезе, сняв штаны, насрал прямо в раковину, и это стало местной отвратительной легендой). Здесь каждый знает про каждого абсолютно всё, тут даже нормально 'покекать' с мема в коридоре нельзя без фатальных социальных последствий и обсуждений за спиной.",
+                "Твой главный, номер один подозреваемый в этом цифровом терроризме — Марсель. Этот местный пикми-бой, который вечно лезет к девчонкам в классе с тупыми, сальными подкатами чуть ли не в трусы, а когда его совершенно логично и жестко посылают нахуй, он надувает губы, обижается как первоклассник у которого отобрали конфету, начинает распускать по школе шизоидные сплетни и называть всех нормальных людей 'кончеными фриками'. Абсолютно мерзкий, скользкий тип. И как только земля таких носит? В отличие, кстати, от своего брата Феврика. Феврик — он вроде бы АФАБ (assigned female at birth), но искренне и последовательно считает себя пацаном. И хотя у него тоже есть свои густые, темные загоны размером с товарный поезд, он хотя бы не ведет себя как конченый, беспринципный мудак Марсель.",
+                "Твой старенький смартфон, надежно спрятанный от глаз училки за массивным пеналом, коротко и тревожно вибрирует. Ебаный ВК-мессенджер, как всегда, тупит полчаса, самопроизвольно переключая твои аккаунты туда-сюда (кто вообще в здравом уме придумал разделить обычный, удобный ВК и этот кривой, неработающий мессенджер?! Уволить бы их всех без выходного пособия!), но, наконец, с натугой прогружает новое сообщение с пометкой 'Срочно'.",
+                "Пишет Александр Сергеевич (он же Рафаэль Амброзиус Кусто, он же детектив Текила Сансет из 'Disco Elysium', он же локальный мем 'Савок Савок'). Тот самый странный парень из 9А, жесткий химбио-гик. Парень, который в далеком садике зачем-то переучился из левши в правшу, сломав себе базовые настройки нейронов, искренне мечтает стать первоклассным хирургом или реаниматологом, тонко шарит за психологическую инди-игру 'Zeno Remake', скупает кубики для Warhammer 40k и однажды на полном серьезе, с горящими глазами безумного ученого, хотел разрезать себе руку нестерильным скальпелем и зашить обратно чисто ради 'хирургической практики'.",
+                "<span class='heart-tag'>💭 Странная мысль:</span> Увидев его аватарку на экране, ты вдруг ловишь себя на том, что уголки твоих губ сами собой предательски ползут вверх, а в груди что-то странно, неритмично екает. Ты тут же хмуришься и мысленно одергиваешь себя: «Так, стоп. Какого хрена? Это просто тахикардия от белых капсул на голодный желудок. Он просто смешной припизднутый чувак из 9А, с которым прикольно рофлить над нормисами. Ничего больше».",
+                "<i>«СРОЧНО! Aleksandr uta kak by moi skafandr! Встречаемся на крыше газпромовской шестиэтажки прямо сейчас. Бросай всё! Я нашел железобетонную, неопровержимую улику на этого ублюдка-сливщика! Этот гнусный анус доигрался!»</i>"
+            ],
+            choices: [
+                { text: "Свалить со скучного обществознания и пойти на крышу к Саше", next: 'roof' },
+                { text: "Пойти в женский туалет покурить найденную сигу", next: 'toilet' },
+                { text: "Сказать историчке, что хочешь домой, потому что 'клапан давит' (Ужасная идея)", next: 'history_death' }
+            ]
+        },
+        history_death: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Школа №1 — Кабинет Истории',
+            image: 'img/informatichka.jpg', 
+            shake: true,
+            text: [
+                "Тебе настолько, до невыносимого зубного скрежета, надоело сидеть на этой жесткой, холодной деревянной парте, что ты решаешь использовать легендарный, непробиваемый метод Саши. Тот самый, которым он хвастался на прошлой неделе. Ты решительно встаешь, громко, со скрипом отодвигая стул, подходишь прямо к учительскому столу исторички и с максимально серьезным, каменным лицом киборга-убийцы заявляешь на весь притихший класс:",
+                "<span class='name-tag'>Ты:</span> «Извините. Мне срочно нужно домой. У меня клапан давит. Ситуация критическая, на грани катастрофы.»",
+                "В классе мгновенно повисает такая звенящая, гробовая тишина, что становится слышно, как за толстым окном монотонно падает снег. Историчка медленно, зловеще, словно Дарт Вейдер, снимает свои очки на цепочке. Её морщинистое лицо на глазах становится багровым, как переспелый, лопнувший помидор, от подступающего гнева и возмущения такой неслыханной наглостью.",
+                "<span class='name-tag'>Историчка:</span> «Ахметова... Анжела... Твой средний балл по моему предмету — жалкие, унизительные 2.0. Ты даже не знаешь, в каком веке жил Петр Первый, путаешь Ленина с Ленноном, и на прошлом итоговом тесте на полном серьезе, черным по белому написала, что император наладил импорт балтийских арбузов! А теперь ты смеешь хамить мне прямо на моем уроке, прикрываясь мерзким, сортирным юмором?!»",
+                "Это полное, безоговорочное и фатальное фиаско. Она не просто не отпускает тебя в туалет или домой. Она с истеричными криками вызывает завуча по воспитательной работе, директора, лично звонит твоей маме прямо на работу (которая, услышав это, уже явно с яростью тянется за своим любимым строительным молотком, чтобы разбить твой чудом выживший смартфон в мелкую крошку, как она уже делала с предыдущими двумя) и в качестве жестокого наказания заставляет переписывать огромную, на десять страниц, контрольную работу по Смутному времени после уроков. Ты остаешься гнить в пустой, гулкой школе до 18:40, с тоской глядя в темнеющее окно на заснеженные Пангоды, а телефон в кармане разрывается от сообщений встревоженного Саши."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        roof: {
+            bgm: 'audio/suspense.mp3',
+            loc: 'Крыша шестиэтажки',
+            image: 'img/roof.jpg',
+            checkpoint: true,
+            text: [
+                "Ты по-тихому, словно профессиональная ниндзя-тень, сбегаешь с душного урока, накинув на себя самое безразличное, непроницаемое лицо, какое только смогла изобразить перед подслеповатой училкой, и быстрым, целеустремленным шагом идешь к той самой знаменитой газпромовской шестиэтажке на улице Дубинина. В этой мажорной, кирпичной шестиэтажке вообще нельзя просто так взять и купить квартиру за наличные деньги, её можно только получить по огромному блату от структур Газпрома. Ты прекрасно, до мельчайших деталей помнишь, что там раньше жила Маша (та самая бывшая девушка, с которой вы неловко встречались в 5 классе целое длинное лето, держась за ручки, пережили кучу детских драм, а потом глупо и быстро расстались по SMS, потому что разъехались в отпуска), когда у нее в основной квартире шел долгий, бесконечный ремонт.",
+                "Ты поднимаешься по грязным, заплеванным бетонным ступеням на самый верхний, шестой этаж, тяжело и сипло дыша морозным воздухом из открытых форточек, чувствуя, как от физической нагрузки начинают мучительно ныть и болеть твои 10 и 11 сломанные позвонки — вечное, саднящее напоминание о том самом нелепом, страшном летнем падении на острые строительные кирпичи с долбаного мини-мостика. Естественно, чуда не происходит, и аниме-романтика разбивается о быт: на тяжелой, облезлой металлической двери, ведущей на саму крышу, висит огромный, ржавый, неподъемный амбарный замок величиной с кулак. Суровые, прагматичные реалии Пангод не прощают легкой романтики японских школьников на крышах с красивыми розовыми закатами.",
+                "Рядом с дверью, прислонившись спиной к холодной стене, стоит Саша. На нем его фирменные очки в тонкой оправе, которые мгновенно и безнадежно запотели от его собственного тяжелого дыхания с мороза. Увидев тебя, он заметно оживляется и машинально пытается пригладить торчащие волосы, но тут же делает максимально серьезное, глубоко аналитическое лицо, будто перед ним на операционном столе лежит сложнейшая опухоль мозга или огромная киста, которую нужно экстренно вырезать заржавевшим скальпелем.",
+                "<span class='name-tag'>Саша:</span> «Блять... Я забыл про замок. Гениально, да? План был надежен, как ебаные швейцарские часы. Можешь смело считать меня припизднутым аутистом. Хотя... я вообще однажды летом, на скучной, монотонной подработке в Газпроме, притворялся конченым психом чисто по рофлу от скуки: выпучивал глаза, дергался и тяжело, громко дышал ртом прямо в лицо старшим коллегам, так мне большинство реально, безоговорочно поверило. Один суеверный мужик даже креститься начал. Так что мне не привыкать производить странное впечатление... особенно на тебя.»",
+                "Последнюю фразу он бормочет совсем тихо, явно надеясь, что ты не расслышишь. Ты тяжело вздыхаешь, глядя на этого непризнанного гения мысли, но почему-то ловишь себя на том, что совсем на него не злишься за закрытую крышу.",
+                "Саша вдруг тепло, по-настоящему искренне и немного застенчиво улыбается сквозь запотевшие линзы и неловко, путаясь в перчатках, достает из бездонного кармана куртки маленький, блестящий брелок в виде пухлого котика.",
+                "<span class='name-tag'>Саша:</span> «Кстати, держи, Анжел. Купил вчера на сдачу от батареек... Ну, просто увидел его и почему-то сразу про тебя подумал. Повесь на свою сумочку, будет работать как надежный шаманский оберег от базовых нормисов и душных училок.»",
+                "<span class='heart-tag'>💓 Момент:</span> Когда ты берешь брелок с его открытой ладони, твои ледяные пальцы случайно касаются его кожи. Его рука оказывается неожиданно очень теплой. Вы оба замираете на какую-то долю секунды. Саша резко кашляет, уши у него предательски краснеют (хотя в подъезде дубак), а ты быстро прячешь брелок, чувствуя, как по щекам разливается странный жар. Черт, да что с вами обоими сегодня происходит?! <span style='color:#ff1493; font-weight:bold;'>(В инвентарь добавлен: 🐱 Брелок Котика)</span>",
+                "<span class='name-tag'>Саша:</span> «Кхм... Так вот! Забудь про эту ебаную крышу. Я точно, на двести процентов знаю, кто скрытый админ этого помойного канала. И я знаю, кто постоянно фоткает всех исподтишка, как крыса, выкладывая этот кринж в предложку. И это не Марсель. Это вообще...»",
+                "Он не успевает произнести имя главного злодея. Снизу, из гулкой, промерзшей темноты подъезда, гулко отдаваясь эхом по пыльной бетонной лестнице, раздаются тяжелые, шаркающие, чисто обезьяньи шаги и до боли знакомый, мерзкий, ломающийся писклявый голос, вещающий по телефону."
+            ],
+            onEnter: () => {
+                if (!hasKeychain) {
+                    hasKeychain = true;
+                    document.getElementById('inv-keychain').style.display = 'block';
+                    updateInventoryBadge();
+                    playUISound('item');
+                    showToast('Подарок от Саши: Брелок Котика!', '🐱');
+                }
+            },
+            choices: [
+                { text: "Затаиться с Сашей за узким мусоропроводом и подслушать", next: 'eavesdrop' },
+                { text: "Слабоумие и отвага: выбежать на лестницу с диким криком 'КТО ЗДЕСЬ?!'", next: 'roof_death' }
+            ]
+        },
+        roof_death: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Лестничная клетка',
+            image: 'img/maxim.jpg',
+            shake: true,
+            text: [
+                "Твоя природная импульсивность, юношеский максимализм и жажда справедливости берут резкий верх над здравым смыслом и инстинктом самосохранения. Забыв про всякую осторожность, ты резко выскакиваешь из-за угла с диким, нечеловеческим боевым криком, искренне надеясь напугать неизвестного сливщика до инфаркта.",
+                "Но на лестнице, в полумраке, стоит вовсе не хлипкий, пугливый Марсель, которого можно сдуть щелчком. Там стоит Максим Антимиров во плоти. Он, конечно, пугается твоего внезапного вопля, отшатывается назад к стене и... рефлекторно, в состоянии аффекта и животного страха, с огромной силой толкает тебя двумя руками прямо в грудь.",
+                "Твои и без того слабые, чудом сросшиеся после летней травмы 10 и 11 позвонки не выдерживают такого предательского, мощного удара судьбы. Ты безнадежно теряешь равновесие, машешь руками в воздухе, пытаясь ухватиться за пустоту, и с криком боли кубарем, пересчитывая своей спиной все острые бетонные ступени, летишь вниз по длинной, крутой лестнице шестиэтажки.",
+                "Последнее, что ты отчетливо, с кристальной ясностью слышишь перед тем, как погрузиться в спасительную тьму глубокого обморока — это издевательский, гиений смех Максима, который уже достал свой кредитный айфон и снимает твое падение на камеру, и отчаянный крик Саши сверху, который бросается вниз по ступенькам тебе на помощь: «АНЖЕЛА! СУКА, МАКСИМ, Я ТЕБЯ СКАЛЬПЕЛЕМ НА ОРГАНЫ РАЗБЕРУ!»."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        toilet: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Женский туалет 2 этажа',
+            image: 'img/toilet.jpg',
+            checkpoint: true,
+            text: [
+                "Ты заходишь в женский туалет на втором этаже. Как обычно, здесь накурено так густо, что пахнет самыми дешевыми, термоядерными сигаретами древнего деда, щедро перемешанными с приторной, химической, тошнотворной паленой жижей для вейпов со вкусом 'тропического манго'. Дышать практически нечем, атмосферу можно буквально резать ножом, хоть топор вешай. Но это все равно в сто, в тысячу раз безопаснее и приятнее, чем заходить в мужской туалет, где вечно творится какой-то лютый, неконтролируемый постапокалипсис, пацаны ссут на потолок, рисуют свастики, и кто-то из параллели однажды на полном серьезе, сняв штаны, насрал огромную кучу прямо в раковину (тренер по боксу потом над ним так угарал, что тот готов был сквозь землю провалиться).",
+                "Ты осторожно достаешь из кармана худи ту самую мятую, грязную сигарету, которую чудом нашла в подъезде прямо на холодном бетонном полу (жесткое правило Пангод: халявный лут есть лут, грех не докурить, сигареты нынче огромных денег стоят, да и 20-летняя подруга-продавщица не всегда может купить!), и щелкаешь дешевой зажигалкой. Сигарета уже кем-то докурена почти до самого фильтра, она крепка как сука, едкий, вонючий дым горло дерет нещадно, до кашля и слез, но деваться некуда — школьный стресс нужно снимать радикальными методами.",
+                "Внезапно с громким, журчащим звуком спускаемой воды с ноги открывается дверь крайней, скрипучей кабинки, и оттуда, нервно поправляя волосы, выходит Даша Маркова (9А класс). В руках у нее светится телефон, на ярко экране которого открыта смешная, уродливая фотография ее кошки с аномально огромными, мемными ушами-локаторами.",
+                "<span class='name-tag'>Даша:</span> «О, Анжела! Приветики-пистолетики! Представляешь, какой кромешный ужас, опять в этот помойный, грязный канал 'Пангоды любят' слили целую кучу стремных фоток! Какой-то кошмар, вообще никакой личной жизни в этой дыре не осталось, даже в носу не поковырять без того, чтобы тебя не сфоткали... Кстати, а че это за тобой Саша из нашего 9А вечно хвостом ходит? Вы че, мутите?»",
+                "<span class='heart-tag'>💓 Реакция:</span> Ты чуть не давишься сигаретным дымом от такого вопроса в лоб. «Чего блять?! Нет конечно! Мы просто кенты, нам индифферентно!» — слишком быстро и слишком громко выпаливаешь ты, чувствуя, как предательски теплеют уши.",
+                "Даша хитро щурится, но быстро меняет тему. Она выглядит очень подозрительно, даже слишком наигранно. Нервно теребит край своей растянутой, безвкусной кофты, переступает с ноги на ногу и постоянно отводит вороватый взгляд на грязный, заплеванный кафель. У Даши в школе прочная, железобетонная репутация главной сплетницы поселка, эдакой токсичной 'пикми-девочки', которая будет мило, с натянутой улыбочкой общаться с людьми в лицо два года, а за спиной их жестко и методично срет, придумывая дикие небылицы. Ты прекрасно, во всех блевотных красках помнишь эпичную, позорную историю, как она однажды на чей-то день рождения нахуярилась крепким зеленым абсентом в чужом гараже вместе с Сашей, валялась в собственных рвотных массах на холодном бетонном полу 4 часа кряду, пока за ней злой батя с мамой не приехали на машине и не устроили при всех жесткий, унизительный выговор. С такой особой точно, на все сто процентов, нужно быть крайне осторожной и следить за каждым её словом."
+            ],
+            choices: [
+                { text: "Прижать Дашу к стенке и жестко допросить про ТГ-канал", next: 'dasha_interrogate' },
+                { text: "Покопаться в полном мусорном ведре (Тяга к луту сильнее гордости)", next: 'search_trash' },
+                { text: "Попросить Дашу подержать сигарету, пока ты поправляешь волосы (Плохая идея)", next: 'toilet_death' }
+            ]
+        },
+        search_trash: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Женский туалет (Зона Лута)',
+            image: 'img/toilet.jpg',
+            text: [
+                "Твой внутренний манчкин, воспитанный на сотнях часов в RPG типа 'Divinity: Original Sin' и 'Baldur's Gate 3' (в которые, кстати, Саша тоже постоянно играет и вечно спамит тебе голосовыми про свои билды, которые ты почему-то переслушиваешь перед сном), громко вопит, что в этой локации еще остался ценный, несобранный лут. Игнорируя удивленный, полный отвращения взгляд Даши, ты подходишь к переполненному, воняющему мусорному ведру и начинаешь без малейшего стеснения рыться в нем руками.",
+                "<span class='name-tag'>Даша:</span> «Эм... Анжела? У тебя все нормально с головой? Ты че там забыла в помойке, бомжиха? Совсем уже со своими субкультурами кукухой поехала?»",
+                "Но твои поиски увенчались грандиозным, эпическим успехом! На самом зловонном дне, под ворохом использованных, влажных бумажных полотенец, ты находишь два поистине легендарных квестовых артефакта.",
+                "Во-первых, огромная двухлитровая пластиковая бутылка <span style='color:#ff1493; font-weight:bold;'>🥤 Злой Колы</span>. Она теплая, давно выдохшаяся, без газов и жутко липкая на ощупь, но это ценный, тяжелый метательный снаряд, который еще сослужит свою службу. <span style='color:#ff1493; font-weight:bold;'>(В инвентарь добавлена: Злая Кола)</span>",
+                "Во-вторых, смятый в комок и небрежно склеенный дешевым скотчем кусок бумаги. Аккуратно развернув его, ты понимаешь, что это <span style='color:#ff1493; font-weight:bold;'>📄 Порванный плакат Crystal Castles</span>. Кто-то безжалостно разорвал его пополам. От бумажки буквально разит концентрированным, токсичным, радиоактивным кринжем. <span style='color:#ff1493; font-weight:bold;'>(В инвентарь добавлен: Порванный плакат)</span>",
+                "Удовлетворенная своей богатой добычей, ты отряхиваешь грязные руки об штаны и с невозмутимым лицом поворачиваешься обратно к ошарашенной Даше, которая смотрит на тебя как на сумасшедшую."
+            ],
+            onEnter: () => {
+                hasCola = true;
+                hasDrawing = true;
+                document.getElementById('inv-cola').style.display = 'block';
+                document.getElementById('inv-drawing').style.display = 'block';
+                updateInventoryBadge();
+                playUISound('item');
+                showToast('Найдено: Злая Кола и Порванный плакат!', '🥤');
+            },
+            choices: [
+                { text: "С абсолютно невозмутимым видом продолжить допрос Даши", next: 'dasha_interrogate' },
+                { text: "Сесть на унитаз и запустить Black Russia (Секретная концовка 📱)", next: 'secret_black_russia', class: 'secret-btn' }
+            ]
+        },
+        secret_black_russia: {
+            bgm: 'audio/suspense.mp3', 
+            loc: 'Сервер Black Russia (Нижегородская область)',
+            image: 'img/toilet.jpg', 
+            text: [
+                "Посмотрев на добытый из мусорки липкий лут, на двуличную Дашу, на заплеванный, грязный кафель школьного туалета, ты внезапно, с кристальной ясностью осознаешь всю тщетность, бессмысленность и абсолютную, непроходимую тупость бытия в этих промерзших Пангодах. Какие, к черту, сливщики? Какие грязные разборки с тупыми офниками в стониках? Кому вообще в масштабах Вселенной не похуй на твои 10 и 11 сломанные позвонки и на то, кто там 2Л, а кто 3Л по этой дурацкой Психософии?",
+                "Ты молча, не говоря ни единого слова опешившей Даше, заходишь в самую дальнюю, самую грязную кабинку туалета, задвигаешь хлипкую щеколду, садишься прямо на холодную крышку унитаза и достаешь свой старенький, потертый смартфон. Твой палец привычным, отработанным движением нажимает на яркую иконку игры 'Black Russia'.",
+                "Привычный экран загрузки с логотипами гипнотизирует тебя, мягко, словно теплое одеяло, обволакивая уставший, измученный стрессом разум. Боль в сросшейся спине чудесным образом уходит. Пронизывающий холод Пангод исчезает, уступая место цифровому теплу серверов.",
+                "Ты садишься за баранку огромной, мощной, тюнингованной виртуальной фуры. Цифровой дизельный двигатель громко, мощно, успокаивающе ревет в наушниках Logitech, полностью заглушая все твои депрессивные мысли про школу, про злую маму с её строительным молотком, про Сашу с его странными, смущенными улыбками и про все эти подростковые драмы.",
+                "Проходит час. Два. Пять. Двенадцать часов. Двадцать четыре часа непрерывного, бессмысленного, монотонного, но такого сладкого, наркотического фарма виртов и очков репутации.",
+                "С каждым пройденным виртуальным километром по текстурированной трассе Арзамас-Батырево ты всё больше забываешь реальный, жестокий мир. Твой больной, уставший разум окончательно и бесповоротно покидает физическое, замерзшее тело, сидящее на холодном унитазе в первой школе, и полностью, до последнего байта, переносится в гигантскую базу данных мобильной гриндилки.",
+                "Ты больше не Анжела Ахметова, уязвимая, одинокая школьница-готка с дешевенькой гитарой за 1060 рублей. Ты — бессмертный, великий дальнобойщик 99 уровня, мультимиллионер, владелица автопарка элитных тачек и абсолютный, непререкаемый авторитет центрального сервера.",
+                "<span class='glitch-text'>СЕКРЕТНАЯ КОНЦОВКА: ЦИФРОВОЕ ВОЗНЕСЕНИЕ ЭСКАПИСТА. ВЫ СБЕЖАЛИ ИЗ СУРОВОЙ РЕАЛЬНОСТИ ПАНГОД, НАВСЕГДА РАСТВОРИВШИСЬ В УЮТНЫХ, БЕСКОНЕЧНЫХ ПИКСЕЛЯХ BLACK RUSSIA. РЕАЛЬНЫЙ МИР БОЛЬШЕ НЕ ПРИЧИНИТ ВАМ БОЛИ.</span>"
+            ],
+            choices: [
+                { text: "ВЕРНУТЬСЯ В СУРОВУЮ РЕАЛЬНОСТЬ И БОЛЬ (РЕСТАРТ)", next: 'start' }
+            ]
+        },
+        toilet_death: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Женский туалет',
+            image: 'img/informatichka.jpg',
+            shake: true,
+            text: [
+                "Решив, что тебе срочно, жизненно необходимо поправить растрепавшиеся волосы в отражении заляпанного, кривого зеркала, ты беспечно, ни о чем не думая, отдаешь свой дымящийся, невероятно вонючий бычок прямо в руки опешившей от такой наглости Даше.",
+                "В этот самый момент, словно по великому закону подлости, тяжелая деревянная дверь туалета с чудовищным грохотом распахивается настежь, с силой ударяясь о стену.",
+                "На пороге, заслоняя собой тусклый свет из коридора, стоит ИНФОРМАТИЧКА. Её маленькие свиные глазки налиты кровью от ярости. Она видит тебя, безмятежно стоящую у зеркала, Дашу с зажженной сигаретой в дрожащих руках и густые, удушливые клубы сизого дыма под потолком.",
+                "Даша, как профессиональная, хитрая крыса-сплетница и истинная 'пикми', мгновенно, за долю секунды ориентируется в стрессовой ситуации, чтобы спасти свою драгоценную шкуру от расправы:",
+                "<span class='name-tag'>Даша:</span> «Ой, мамочки, Марья Ивановна! А это Ахметова тут курит эту гадость! Я у неё сигарету отбирала, честно-честно, чтобы она свое здоровье не портила!» — она с невинным, ангельским видом бросает твой тлеющий бычок прямо тебе под ноги на кафель.",
+                "Информатичка не слушает никаких жалких оправданий. Она хватает тебя за шкирку мертвой, стальной хваткой бульдога. Тебя с великим позором ведут к директору по длинным коридорам на глазах у всей школы, звонят матери (которая, судя по звукам на фоне, уже достала из кладовки свой любимый молоток), публично исключают из секции в ДК (навсегда плакали твои честно накопленные 1060 рублей за год обучения) и ставят на строгий, жестокий учет в детскую комнату милиции. Даша выходит из туалета абсолютно сухой и чистой из воды, а вечером с упоением пишет анонимный, язвительный пост в ТГ-канал 'Пангоды Любят', в красках расписывая, как тебя позорно спалили в туалете с сигаретой. Ты социально, морально и физически уничтожена."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        eavesdrop: {
+            bgm: 'audio/suspense.mp3',
+            loc: 'Лестничная клетка',
+            image: 'img/maxim.jpg',
+            text: [
+                 "<span class='heart-tag'>💓 В засаде:</span> Места за трубой старого мусоропровода катастрофически мало. Чтобы Максим вас не спалил, Саша осторожно тянет тебя за рукав к себе в тень. Вы оказываетесь прижаты друг к другу почти вплотную — ты спиной чувствуешь его грудную клетку и слышишь, как быстро-быстро колотится его сердце прямо у твоей лопатки. Он кладет ладонь тебе на плечо, и вы оба замираете, боясь даже вздохнуть. Пару секунд ты вообще не слышишь, что происходит внизу, потому что все мысли в голове резко перепутались от того, как близко находится его лицо.",
+                 "Вы с Сашей бесшумно, через силу вернув себе концентрацию, заглядываете в холодный лестничный пролет между пыльными этажами.",
+                 "Там, вальяжно опершись на ржавые перила, стоит Максим Антимиров (9Б класс). Тот самый пресловутый 160-сантиметровый 'тюбик' и типичный 'Абу-бандит' со своей фирменной, уебищной редкой штрихкод-челкой и в вечной, мятой, непростиранной голубой рубашке. Он выглядит так нелепо, словно макака нашла на помойке современный сенсорный смартфон и теперь безуспешно пытается им пользоваться.",
+                 "Он агрессивно, с характерными дешевыми офниковскими ужимками жестикулирует свободными руками и истошно, на весь подъезд орет в динамик телефона, явно красуясь перед невидимым собеседником на том конце:",
+                 "<span class='name-tag'>Максим:</span> «Да, братан, отвечаю за базар пацанами, я все эти компроматные фотки админу в предложку скинул! И про Феврика, и про ту конченую готку Ахметову! Пусть весь, сука, поселок знает, какие они все кринжовые, поехавшие нормисы! У меня-то из интересов только крутые заниженные машинки, дрифт в Блек Раше и пивко 'Балтика' по выходным, но я тут, блядь, главный решала на районе, понял?! Я их всех, этих нефоров, на место поставлю!»",
+                 "При упоминании твоей фамилии пальцы Саши на твоем плече мгновенно сжимаются. Он наклоняется и горячо шепчет тебе прямо на ухо, отчего по твоей спине пробегает табун мурашек:",
+                 "<span class='name-tag'>Саша:</span> «Сука, я так и знал! Он смеет еще рот на тебя открывать?! Ты только посмотри на этого урода недоношенного! Абсолютно, кристально пустая личность! Кусок биомусора! Пиздец, у меня просто слов нет, даже его лучший друг Давид в открытую говорит, что он стремительно становится полным долбоебом! Давай размажем его прямо тут!»",
+                 "Ситуация на лестнице накаляется до предела. Сливщик, отравлявший жизнь половине школы, найден с поличным, прямо на месте преступления, и он оказался еще более гнусным, мерзким анусом, чем вы вообще могли себе представить."
+            ],
+             choices: [
+                { text: "Жестко выхватить у Саши Bluetooth-адаптер и метнуть в Максима как смертельный сюрикен", next: 'throw_bt' },
+                { text: "Тихо достать смартфон и аккуратно заснять весь этот цирк на видео для компромата", next: 'record_video' }
+            ]
+        },
+        dasha_interrogate: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Женский туалет',
+            image: 'img/dasha.jpg',
+            text: [
+                "Ты делаешь очень глубокую, обжигающую легкие до самого дна затяжку едким дымом и в упор, не моргая, смотришь Даше прямо в её бегающие, полные фальши и лицемерия двуличные глаза, нависая над ней как коршун.",
+                "<span class='name-tag'>Ты:</span> «Даш, кончай ломать дешевую комедию и строить из себя невинную, пушистую овечку. Мы обе прекрасно знаем правду. Ты — главная, самая токсичная сплетница всех 9-х классов, про тебя уже пол поселка легенды слагает. Ты по-любому в курсе, кто этот гребаный канал ведет и крысятничает. У тебя везде, блядь, свои связи. А если есть связи — значит есть стопроцентная инфа. Колись быстро, пока я не затушила этот раскаленный бычок о твою любимую кофту.»",
+                "Даша заметно тушуется от твоего напора, мнется с ноги на ногу, тяжело, театрально вздыхает и, наконец, нехотя отводит свой виноватый взгляд от экрана телефона:",
+                "<span class='name-tag'>Даша:</span> «Ну... блин, ладно, Анжела. Вообще-то, Сава там теперь главный админ. Тот самый Савелий из второй школы, который лучший друг твоего ненаглядного химбио-шизоида Саши. Но он клянется всем святым, что сам в полном шоке от происходящего! Он говорил мне, что просто хотел следить за порядком в группе, чистить спам, а кто-то другой, какой-то анонимный урод, постоянно, каждый день закидывает эти жесткие, провокационные посты в предложку с левых, фейковых аккаунтов! Он тупо не успевает их удалять!»",
+                "Дело принимает совершенно неожиданный, лихо закрученный, почти детективный оборот в духе дешевых криминальных сериалов с НТВ. Савелий — лучший и, по сути, единственный действительно близкий друг Саши. Он невероятно хороший, сверх-эмпатичный парень. Тот самый парень, который однажды безропотно, не жалуясь, 5 часов кряду убирал вонючую блевоту за друзьями после жесткой пьянки, пока его самого не стошнило от невыносимого запаха. Он слишком правильный, слишком 'хороший мальчик'. Зачем ему покрывать мерзких сливщиков? Неужели в тихом омуте черти водятся, и он тоже замешан в этом зловонном дерьме?"
+            ],
+            choices: [
+                 { text: "Срочно написать Савелию гневное сообщение в ВК для жесткого выяснения отношений", next: 'message_sava' }
+            ]
+        },
+        throw_bt: {
+            bgm: 'audio/victory.mp3',
+            loc: 'Лестница шестиэтажки',
+            image: 'img/bt_hit.jpg',
+            checkpoint: true,
+            shake: true,
+            text: [
+                "Твое и без того тонкое северное терпение лопается окончательно, с оглушительным звоном. Больше никаких пустых разговоров, никаких 'индифферентно'. Пришло время жестокой физической расправы. Ты без лишних слов, резким, отточенным движением выхватываешь у опешившего от твоей наглости Саши из кармана худи его новенький, только что распечатанный Bluetooth 4.0 адаптер от Logitech. Он так гордился этой покупкой (он только недавно заказал его на Озоне вместе с топовыми проводными наушниками и 5-метровым USB-удлинителем, чтобы с комфортом играть ночами в 'Disco Elysium' и слушать дэт-метал, не путаясь в длинных проводах). Ты крепко берешь этот крошечный кусок качественного пластика и с нечеловеческой силой, прямо как сюрикен опытного ниндзя-убийцы, метаешь его вниз, в пролет, целясь в голову.",
+                "Прямое, снайперское, идеальное попадание! Адаптер звонко, с удивительно сочным, удовлетворяющим душу звуком 'ЧВЯК' отскакивает прямо от пустой лобной кости тупого Максима. Тот взвизгивает от неожиданности, как резаная свинья на убое, комично дергается всем своим мелким 160-сантиметровым несуразным телом, нелепо взмахивает руками и с ужасом роняет свой пафосный, купленный в микрозайм телефон прямо в зияющую дыру лестничного пролета. Раздается прекрасный, исцеляющий израненную душу хруст разбивающегося в мелкие дребезги дорогого экрана о жесткий бетонный пол первого этажа.",
+                "<span class='name-tag'>Максим:</span> «ААА! БЛЯТЬ! ПИЗДЕЦ! МОЙ ТЕЛЕФОН! ВЫ ЧЕ, СУКИ, СОВСЕМ ПРИПИЗДНУТЫЕ НАХУЙ?! Я ВАС УРОЮ, ВАМ ПИЗДЕЦ ОТ ПАЦАНОВ!»",
+                "<span class='name-tag'>Саша:</span> «Ахуеть... Мой новенький адаптер за косарь... Покойся с миром, мой сладкий блютуз-принц. Но знаешь что, Анжела? Ради того, чтобы увидеть, как ты сносишь ебало этому гнусному анусу, я бы отдал все свои адаптеры мира.»",
+                "<span class='heart-tag'>💓 Взгляд:</span> Саша смотрит на тебя снизу вверх через очки с таким неприкрытым, щенячьим восхищением, будто ты как минимум богиня разрушения, сошедшая с обложки метал-альбома. Поняв, что ляпнул что-то слишком личное, он тут же смущенно откашливается и прячет взгляд в пол, а ты отворачиваешься, чтобы он не заметил твою дурацкую улыбку.",
+                "Максим с нескрываемым позором, размазывая сопли и горькие слезы по лицу, трусливо убегает вниз по лестнице спасать останки своего драгоценного айфона. Сливщик физически нейтрализован и наказан рублем. Угроза временно ликвидирована. Но расслабляться пока рано. Громко и пронзительно раздается школьный звонок на перемену, напоминая о том, что ты всё ещё находишься в холодном, неумолимом аду образовательной системы.",
+                "Ты пытаешься покрепче застегнуть свою сумочку, но китайская молния предательски заедает. <span style='color:#ff1493; font-weight:bold;'>В суматохе и волнении ты совершенно не замечаешь, как хлипкое металлическое колечко разгибается, и подаренный Сашей милый брелок котика беззвучно отрывается, тихо падая на грязный бетонный пол. Ты уходишь, оставив его там, в пыли.</span>"
+            ],
+            onEnter: () => {
+                if (hasKeychain) {
+                    hasKeychain = false;
+                    document.getElementById('inv-keychain').style.display = 'none';
+                    updateInventoryBadge();
+                }
+            },
+            choices: [
+                { text: "Спуститься на свой этаж к раздевалке, скрываясь с места преступления", next: 'informatichka_encounter' }
+            ]
+        },
+        record_video: {
+            bgm: 'audio/victory.mp3',
+            loc: 'Лестница шестиэтажки',
+            image: 'img/video_proof.jpg',
+            checkpoint: true,
+            text: [
+                "Ты действуешь хладнокровно, предельно расчетливо и абсолютно безэмоционально, как настоящий профессиональный агент КГБ под глубоким прикрытием. Медленно достаешь свой побитый жизнью смартфон (хвала всем древним богам и духам Пангод, он еще как-то работает, держит заряд на морозе и до сих пор не разбит в пыль маминым строительным молотком, как два твоих предыдущих несчастных смартфона) и предельно аккуратно, просунув объектив через ржавые перила, снимаешь на видео длинное, подробное, чистосердечное признание Максима со всеми его смешными обезьяньими ужимками, офниковскими понтами и писклявыми криками в трубку.",
+                "Ты тут же, не теряя ни единой драгоценной секунды, отправляешь этот компрометирующий видео-шедевр напрямую в личку админу канала — Савелию, сопроводив файл короткой, не терпящей возражений и максимально жесткой подписью: 'Бань этого пикми-урода перманентно и сноси все посты, иначе я солью это позорное видео всем в поселке, включая его так называемых 'пацанов', и он станет главным посмешищем'.",
+                "Ровно через 5 томительных минут канал 'Пангоды любят' полностью, под ноль очищен от всей клеветы, а самого Максима публично, с особым, изощренным цинизмом позорят админскими скриншотами его же собственного жалкого признания. Ты — просто идеальный 'нейтральный чувачок', серый кардинал школы, который элегантно решил огромную проблему исключительно несокрушимой силой своего интеллекта и жесткого шантажа, даже не замарав при этом руки о грязного, потного офника.",
+                "<span class='name-tag'>Саша:</span> «Просто гениально, Анжел. Это невероятно чистая, ювелирная работа мастера. Почти так же виртуозно и красиво, как вскрывать грудную клетку острым, стерильным скальпелем... Знаешь, ты вообще самый умный и крутой человек в этой проклятой дыре. Серьезно.»",
+                "<span class='heart-tag'>💓 Неловкость:</span> Он говорит это неожиданно тихо и без своей обычной клоунской иронии, глядя прямо в твои глаза. Вы стоите на пустой лестнице слишком близко друг к другу, и воздух между вами вдруг становится каким-то наэлектризованным. Саша первым не выдерживает зрительного контакта, смущенно поправляет очки и начинает нести какую-то пургу про хирургические швы, а ты чувствуешь, как в животе странно скручивается теплый узел.",
+                "Но тут оглушительно, ломая барабанные перепонки, звенит школьный звонок. Уроки закончились... ну, почти закончились.",
+                "Ты удовлетворенно перекидываешь сумочку через плечо. <span style='color:#ff1493; font-weight:bold;'>В этот самый момент хлипкое дешевое китайское крепление брелока-котика не выдерживает резкого рывка, разгибается, и он беззвучно падает в вековую пыль лестничной клетки. Ты этого даже не замечаешь, полностью сбитая с толку взглядом Саши.</span>"
+            ],
+            onEnter: () => {
+                if (hasKeychain) {
+                    hasKeychain = false;
+                    document.getElementById('inv-keychain').style.display = 'none';
+                    updateInventoryBadge();
+                }
+            },
+             choices: [
+                { text: "Спуститься вниз к выходу, чувствуя себя гениальной победительницей", next: 'informatichka_encounter' }
+            ]
+        },
+        message_sava: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Длинный Коридор школы',
+            image: 'img/sava_chat.jpg',
+            checkpoint: true,
+            text: [
+                 "Ты открываешь приложение ВК. Сообщения, как это обычно бывает при отвратительном школьном интернете, грузятся целую, бесконечную вечность. Ебаный, кривой ВК-мессенджер опять нещадно лагает, самопроизвольно переключая твои аккаунты туда-сюда по 30 минут, сбрасывая авторизацию и требуя коды из СМС. Какого черта эти криворукие разработчики из Mail.ru вообще придумали разделить одно нормальное, рабочее приложение на два абсолютно разных и неработающих куска кода?!",
+                 "Наконец, спустя череду проклятий и попыток разбить телефон об стену, прогружается чат с Савелием. Ты яростно, со скоростью пулемета стучишь по клавиатуре, пишешь ему огромное, гневное сообщение с кучей КАПСА, восклицательных знаков и отборного мата, ультимативно требуя внятных объяснений того, почему он, такой правильный, покрывает мерзких сливщиков.",
+                 "Через мучительную, тягучую минуту ожидания, когда ты уже готова идти бить ему лицо, приходит ответ:",
+                 "<span class='name-tag'>Сава:</span> «Блин, Анжела, да успокойся ты, выдохни! Я уже сам всё узнал, разобрался и удалил эти ебаные, тупые сливы. Саша мне уже весь мозг выел из-за тебя, орал в трубку, что порвет любого, кто тебя в этот канал выложит. Оказалось, это тот самый обиженный Марсель с фейкового твинка кидал все эти фотки, гнида такая плешивая. Я его забанил перманентно. Больше этот пухлый хомяк-сливщик никого в нашем поселке не потревожит.»",
+                 "<span class='heart-tag'>💓 Мысль:</span> Ты перечитываешь строчку «Саша мне весь мозг выел из-за тебя» три раза подряд. То есть Рафаэль реально так сильно переживал за тебя? Ты глупо улыбаешься экрану телефона, тут же стираешь улыбку с лица, глубоко затягиваешься терпкой сигаретой в последний раз и выкидываешь окурок в унитаз. Пора выходить в коридор, где тебя уже наверняка ждет этот ненормальный рыцарь в белом халате."
+            ],
+             choices: [
+                { text: "Выйти в школьный холл, натянув маску примерной ученицы", next: 'informatichka_encounter' }
+            ]
+        },
+        informatichka_encounter: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Главный холл школы',
+            image: 'img/informatichka.jpg',
+            shake: true,
+            text: [
+                "Ты собираешься абсолютно спокойно, с чувством выполненного долга уйти домой, ведь у тебя осталось всего пара абсолютно ненужных, бесполезных уроков (кажется, это история, по которой у тебя средний балл удручающе болтается где-то в районе 2.0, и ты вообще хз, как это исправлять, не перечитывая горы занудных учебников). Плюс ко всему, тебя слегка подташнивает — то ли от этих странных секретных белых капсул, выпитых на голодный желудок, то ли просто от хронической северной усталости, недосыпа и глубокого отвращения к этому месту.",
+                "Ты уверенно, почти чеканя шаг, идешь по пустому, гулкому коридору, уже сладостно предвкушая свободу, тепло дома и просмотр сериалов под пледом, но внезапно на твоем пути, словно несокрушимый, финальный босс в хардкорной игре Dark Souls, из ниоткуда вырастает ОНА.",
+                "<span class='glitch-text'>ИНФОРМАТИЧКА.</span>",
+                "Огромная, монументальная женщина поистине внушительных размеров с невероятно тяжелым, холодным, сверлящим взглядом серийного маньяка-убийцы. Абсолютно вся школа её искренне ненавидит и боится до дрожи в коленках. Даже твоя мама её откровенно, публично недолюбливает после изматывающих родительских собраний. Среди старшеклассников ходят упорные, обоснованные слухи, что она такая злая и агрессивная просто потому, что муж её дома абсолютно не удовлетворяет (прямо как ту несчастную, забитую кассиршу из Пятерочки, которой смелый Саша однажды выкрикнул эту правду прямо в перекошенное лицо на кассе самообслуживания). Информатичка смотрит на тебя так сурово, презрительно, будто ты лично забыла закрыть тег `</div>` в жизненно важном HTML-коде и тем самым навсегда сломала весь глобальный мировой интернет.",
+                "С ней абсолютно бесполезно спорить. Даже если ты всё сделаешь абсолютно правильно, строго по методичке, она обязательно найдет к чему придраться, докопается до шрифта, до отступа и завалит тебя нахуй.",
+                "<span class='name-tag'>Информатичка:</span> «Ахметова Анжела! А ты куда это, стесняюсь спросить, намылилась посреди учебного дня? У нас сейчас изложение! Без предупреждения! Экстренная проверка знаний! Все нормальные, адекватные дети уже давно сидят в классе и пишут, а ты тут по коридорам прохлаждаешься, как у себя дома! Совсем стыд потеряла со своими гитарами!»",
+                "Её массивная туша наглухо, без малейших вариантов преграждает путь к заветному, спасительному гардеробу с куртками. Нужно срочно, прямо за долю секунды что-то делать, иначе придется покорно возвращаться в класс, сидеть еще 45 мучительных минут, портить зрение и слушать её невыносимый, гнусавый бубнеж про правила русского языка и форматирование текста в Ворде."
+            ],
+            choices: [
+                { text: "Сымитировать жесткий приступ, закатить глаза и упасть в обморок", next: 'fake_faint' },
+                { text: "Расчехлить электрогитару и вдарить по струнам, оглушив её риффом", next: 'use_guitar' },
+                { text: "Сдаться, смиренно пойти в класс писать это проклятое изложение (Ужасная идея)", next: 'izlozhenie_death' }
+            ]
+        },
+        izlozhenie_death: {
+            bgm: 'audio/school.mp3',
+            loc: 'Школа №1 — Класс Информатики',
+            image: 'img/class.jpg',
+            shake: true,
+            text: [
+                "Твой юношеский, бунтарский дух окончательно сломлен её железобетонным авторитетом. Ты тяжело, обреченно вздыхаешь, опускаешь плечи, как побитая собака, и плетешься обратно в класс, как покорная овца на заклание. Садишься за свою холодную, неудобную, исписанную матами парту, достаешь помятую тетрадь и изо всех оставшихся сил пытаешься слушать невероятно скучный, монотонный текст для изложения про каких-то там берез, ручейки и русскую природу.",
+                "Но химия берет свое. Твои белые капсулы окончательно перестают действовать, уступая место чудовищной, навалившейся свинцовой усталости, хроническому недосыпу и эху 6 пропущенных утренних будильников. Твои веки тяжелеют, слипаются. Ты совершенно незаметно для себя засыпаешь прямо на жесткой парте, пуская сладкие слюни на свой чистый, белоснежный лист бумаги.",
+                "Информатичка, заметив это вопиющее, наглое нарушение дисциплины, с нескрываемым садистским наслаждением будит тебя оглушительным, хлестким ударом длинной деревянной линейки по твоему столу. Тебе демонстративно, красной ручкой ставят жирный кол в журнал, испортив аттестат. Из-за этого непредвиденного, долгого сна ты позорно просыпаешь свое платное занятие по электрогитаре в ДК. Старый, обиженный ОБЖшник в ДК, не дождавшись тебя, звонит твоим родителям и с позором выгоняет тебя из музыкальной секции навсегда за 'дезертирство, безответственность и неуважение к старшим по званию'.",
+                "Твоя зарождающаяся, яркая репутация рок-звезды Пангод полностью, безвозвратно разрушена в прах. Ты стала обычной, серой, никому не интересной, забитой троечницей без крутого хобби и без будущего."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        fake_faint: {
+            bgm: 'audio/school.mp3',
+            loc: 'Школьный Медпункт',
+            image: 'img/med.jpg',
+            checkpoint: true,
+            text: [
+                "Твой уставший мозг работает молниеносно, просчитывая варианты. Ты применяешь древнюю, проверенную поколениями хитрых школьников тактику выживания. Закатываешь глаза так далеко назад, что, кажется, можешь разглядеть свой собственный мозг изнутри, издаешь тихий, жалобный стон умирающего лебедя и медленно, максимально артистично, как драматическая актриса драмтеатра, оседаешь на холодный, грязный школьный линолеум.",
+                "В этот момент ты очень вовремя вспоминаешь ту самую адскую, простреливающую боль, когда летом глупо упала на груду острых кирпичей с мини-мостика и сломала себе 10 и 11 позвонки (боль была где-то на 7 из 10, но ты тогда от шока ничего не поняла). Твое лицо само собой, без особых актерских усилий принимает невероятно страдальческое, правдоподобное, мертвенно-бледное выражение искренней муки. Железобетонная Информатичка пугается не на шутку. Вся её злоба, авторитарность и непоколебимая спесь мгновенно улетучиваются, сменяясь чистой, животной паникой за свою должность и уголовную ответственность.",
+                "<span class='name-tag'>Информатичка:</span> «Ох, господи Иисусе Христе! Ахметовой плохо! Срочно в медпункт её несите! Кто-нибудь из крепких мальчиков, помогите ей! Скорую вызывайте! Воды живо!»",
+                "<span class='heart-tag'>💓 Спасение:</span> Саша (как истинный будущий хирург-профессионал, которого клятва Гиппократа обязывает спасать жизни) тут же, словно Бэтмен из тени, материализуется рядом. Но когда он подхватывает тебя, чтобы отвести в медпункт, его руки совсем не похожи на холодные руки врача — он прижимает тебя к себе за талию и плечо так бережно и крепко, будто ты сделана из хрусталя. Приоткрыв один глаз, ты видишь, что он реально испугался, пока ты не подмигиваешь ему. Он выдыхает с облегчением, тихо усмехается тебе в макушку, но руку с твоей талии не убирает до самого крыльца школы.",
+                "Вас официально, с громкими почестями и освобождением отпускают со всех оставшихся уроков. Как только вы с Сашей выходите за порог душной школы на спасительный морозный воздух Пангод, ты 'выздоравливаешь', но вы еще пару секунд стоите, держась за руки, пока оба синхронно не одергиваете их, делая вид, что просто поправляете куртки."
+            ],
+            choices: [
+                { text: "Предложить Саше пойти погулять, чтобы отпраздновать свободу", next: 'street_crossroad' }
+            ]
+        },
+        use_guitar: {
+            bgm: 'audio/rock.mp3',
+            loc: 'Холл школы',
+            image: 'img/guitar.jpg',
+            checkpoint: true,
+            shake: true,
+            text: [
+                "Твое и без того хрупкое северное терпение лопнуло окончательно, бесповоротно и с громким треском. Больше никакого смирения, никакого философского 'индифферентно'. Хватит быть жалкой терпилой! Ты резким, дерзким движением расстегиваешь молнию плотного зимнего чехла и достаешь свою тяжелую, любимую электрогитару (ту самую, за обучение на которой ты сама, лично и честно платишь 1060 рублей каждый год в местном ДК, не прося ни копейки у вечно недовольных мам и пап).",
+                "Ты виртуозно, в эффектном прыжке, втыкаешь толстый кабель в невидимый, астральный гитарный комбик, который прямо сейчас генерируется из эфира и питается исключительно твоей мощной, жгучей ненавистью к этой школе, к тупым правилам и ко всей образовательной системе в целом.",
+                "И с диким размаху выдаешь тяжелейший, самый грязный, самый перегруженный дисторшном дэт-метал рифф. Затем, без малейшей паузы и перехода, начинаешь неистово пилить лютое, скоростное соло из легендарной, запрещенной песни Валентина Стрыкало 'Достань и покажи всем член'. Огромная звуковая волна, состоящая из чистого юношеского бунта, буквально сносит грузную, неповоротливую информатичку с ног. Она в первобытном, животном ужасе затыкает уши пухлыми пальцами и в панике отступает к бетонной стене, теряя равновесие и роняя свои очки.",
+                "<span class='name-tag'>Информатичка:</span> «АХМЕТОВА, ЧТО ЭТО ЗА БЕСОВЩИНА?! САТАНИСТЫ! НАРКОМАНЫ ПРОКЛЯТЫЕ! В МОЕ ВРЕМЯ ВСЕ СЛУШАЛИ НОРМАЛЬНУЮ, ДУХОВНУЮ МУЗЫКУ И УВАЖАЛИ СТАРШИХ!»",
+                "<span class='heart-tag'>💓 Фан-клуб из одного человека:</span> Под оглушительные, жирные квинт-аккорды ты гордо, как настоящая рок-звезда, выходишь из школы в распахнутые стеклянные двери. Саша выбегает за тобой следом, неся твою куртку. Он смотрит на тебя совершенно ошалевшими, влюбленными глазами (хотя сам еще ни за что не признается себе, что это именно тот самый взгляд), бережно накидывает куртку тебе на плечи и поправляет твой капюшон, отчего внутри у тебя начинают порхать какие-то совершенно не готические, розовые бабочки."
+            ],
+            choices: [
+                { text: "Пойти с Сашей подальше от школы, пока не вызвали копов", next: 'street_crossroad' }
+            ]
+        },
+        street_crossroad: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Улица Пангод (Перепутье)',
+            image: 'img/street.jpg',
+            checkpoint: true,
+            text: [
+                "На улице просто адски, невыносимо морозно. Суровая, беспощадная северная зима в Пангодах не щадит абсолютно никого, пробирая ледяным, колючим ветром до самых костей и замораживая сопли прямо в носу за пару секунд. Саша неловко поправляет свои очки, которые моментально, сплошной белой пеленой покрылись толстым слоем непроглядного конденсата от перепада температур.",
+                "<span class='heart-tag'>💓 Прогулка:</span> Вы идете рядом по заснеженному тротуару, и Саша специально переходит на наветренную сторону, чтобы закрывать тебя от колючей северной поземки своим плечом. Ваши руки в карманах курток постоянно случайно сталкиваются при ходьбе, но почему-то ни ты, ни он не пытаетесь отойти подальше.",
+                "<span class='name-tag'>Саша:</span> «Слушай, Анжел... У меня батя опять уехал на вахту. Снова на 2 долгих, ебаных месяца будет торчать там, на севере, машины чинить, а по вечерам на кухне бухать и шортсы на Ютубе залипать. Так что его гараж теперь полностью в моем распоряжении, ключи у меня в кармане. Я туда недавно притащил старую светодиодную ленту, нашел полунерабочую возле мусорки — сам спаял контакты, теперь она офигенно светит. А еще у меня там заначена бутылка зеленого абсента. Пойдем вдвоем, посидим в тепле, пофилософствуем о вечном? Ну... если ты, конечно, не против моей компании.»",
+                "Он говорит это с непривычной для него неуверенностью, ковыряя носком ботинка сугроб и явно очень надеясь, что ты согласишься пойти именно с ним. Предложение звучит невероятно соблазнительно. С другой стороны, тебе ровно через час кровь из носу нужно быть на занятии в ДК по электрогитаре, где дежурит маразматичный дед-ОБЖшник.",
+                "А еще есть третий вариант: сегодня Вова (легендарный Вавандряус) обещал принести к Рамазану на Базу ту самую эпичную настольную игру за бешеные 15 000 рублей.",
+                "Перед тобой лежит выбор, который определит остаток этого безумного дня."
+            ],
+            choices: [
+                { text: "Пойти вдвоем с Сашей в гараж (Абсент, гирлянды и разговоры по душам) ❤️", next: 'garage_scene' },
+                { text: "Пойти в ДК на урок гитары (Долг зовет)", next: 'dk_scene' },
+                { text: "Позвать Сашу с собой на Базу Рамазана к Вове (Настолка за 15к) 🎲", next: 'call_vova' }
+            ]
+        },
+        call_vova: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Улица Пангод (По пути на Базу)',
+            image: 'img/street.jpg',
+            checkpoint: true,
+            text: [
+                "Ты достаешь свой телефон на лютом морозе, чувствуя, как мгновенно немеют пальцы, и набираешь Вове в Телеге. Гудки идут долго, но наконец он берет трубку.",
+                "<span class='name-tag'>Вова:</span> «Да, Анжела, здарова. Ты где пропадаешь? Мы с Рамазаном уже на Базе. Я притащил эту махину за 15 кусков, тут правил на 300 страниц, Рафаэль обещал прийти объяснить, но его где-то носит.»",
+                "<span class='name-tag'>Ты:</span> «Рафаэль со мной. Мы идем к вам. Ставьте чайник.»",
+                "<span class='heart-tag'>💓 По дороге:</span> Увидев, что твои пальцы совсем покраснели от холода, пока ты держала телефон, Саша вдруг без слов берет твою руку и прячет её вместе со своей в глубокий, теплый карман своей куртки. «Чтоб не отморозила, тебе еще соляки играть, Ахметова» — бурчит он, глядя строго вперед, будто это чисто медицинская процедура первой помощи. Ты ничего не отвечаешь, только крепче сжимаешь его пальцы в кармане.",
+                "Вы идете сквозь снежную пургу. Пангоды выглядят серыми и безжизненными, как локации из Fallout, но вам впервые за долгое время вообще не холодно. По пути Саша увлеченно рассказывает тебе про какую-то визуальную новеллу, которую он прошел на все концовки, и ты слушаешь его голос, понимая: да, вы все здесь определенно не нормисы. Вы — элита этого заснеженного поселка.",
+                "Наконец, вы подходите к нужной двери."
+            ],
+            choices: [
+                { text: "Подойти к двери Базы Рамазана", next: 'base_entrance' }
+            ]
+        },
+        base_entrance: {
+            bgm: 'audio/suspense.mp3',
+            loc: 'Подъезд Рамазана',
+            image: 'img/maxim.jpg',
+            text: [
+                "Успешно преодолев темные, холодные метры зловещего подъезда, вы наконец-то подходите к массивной, неприступной стальной гермодвери. Это она. База. Ваш оазис в бесконечной пустыне тильта и депрессии.",
+                "Но путь внутрь не так прост. Дверь заперта на магнитный замок. Ты пытаешься нажать кнопку звонка, но она залеплена жвачкой.",
+                "Внезапно из-за угла выруливает какой-то левый офник из параллели, который тут часто отирается.",
+                "<span class='name-tag'>Офник:</span> «Э, нефоры. Сюда нельзя заходить. Тут частная территория. Пацаны отдыхают. Проваливайте, пока я за шмот не спросил по всей строгости.»",
+                "Саша мгновенно делает шаг вперед, загораживая тебя собой от гопника, и сжимает кулаки."
+            ],
+            choices: [
+                { text: "Облить офника липкой Злой Колой из сумочки (Бонус за лут!)", next: 'ofnik_cola_win', class: 'secret-btn', requiresCola: true },
+                { text: "Написать Вове, чтобы он вышел и разобрался", next: 'the_base' }
+            ]
+        },
+        ofnik_cola_win: {
+            bgm: 'audio/victory.mp3',
+            loc: 'Подъезд Рамазана (Победа)',
+            image: 'img/bt_hit.jpg',
+            shake: true,
+            text: [
+                "Пока офник разминает костяшки пальцев, ты молча расстегиваешь сумочку и достаешь своё секретное биохимическое оружие из туалетной мусорки — двухлитровую бутылку теплой, липкой <span style='color:#ff1493; font-weight:bold;'>🥤 Злой Колы</span>.",
+                "Хорошенько встряхнув бутылку, ты скручиваешь крышку и направляешь мощную коричневую струю прямо в лицо опешившему гопнику!",
+                "<span class='name-tag'>Офник:</span> «ААА! БЛЯТЬ! МОИ ГЛАЗА! МОЙ ПАЛЕНЫЙ СТОНИК! ОНО ЛИПКОЕ, СУКА!»",
+                "Его фирменная челка-штрихкод намертво прилипает ко лбу, и он, поскользнувшись в луже сладкой газировки, с визгом ретируется вниз по лестнице. Саша поворачивается к тебе, поправляя очки с видом абсолютного восхищения: «Ахметова, я официально боюсь тебя и восхищаюсь тобой одновременно»."
+            ],
+            choices: [
+                { text: "Победно зайти внутрь Базы Рамазана", next: 'the_base' }
+            ]
+        },
+        the_base: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Квартира Рамазана (База)',
+            image: 'img/class.jpg',
+            text: [
+                "Тяжелая стальная дверь со скрипом открывается. На пороге стоит Вова (Вавандряус) в своем легендарном, выглаженном до блеска костюме, в котором он выглядит как респектабельный бизнесмен, а не школьник из Пангод.",
+                "<span class='name-tag'>Вова:</span> «Проходите, заебали. Я этого штриха уже третий раз гоняю. О, а вы че за ручки держитесь?»",
+                "Вы с Сашей как ошпаренные моментально расцепляете руки, синхронно выдавая: «Там скользко просто было!», а Вова лишь многозначительно хмыкает.",
+                "Вы заходите внутрь. Квартира Рамазана — это настоящий, осязаемый кайфарик. Здесь тепло, пахнет пиццей и пыльным системным блоком.",
+                "В дальнем, темном углу просторной комнаты, освещаемый лишь ярким, холодным, мерцающим светом огромного геймерского монитора, сидит хозяин Базы — Рамазан. Он полностью, ментально и физически, слился с компьютерным креслом в единый, совершенный биомеханический кибер-организм. Он мужественно, без единой жалобы пошел на 14-й час беспрерывной, тяжелой игры в Роблокс. Он даже не моргнул и не повернул головы, когда вы вошли. Это уровень абсолютной концентрации, доступный лишь истинным Легендам серверов.",
+                "В самом центре комнаты, под мягким, теплым светом лампы, гордо стоит гигантский стол 120 на 90 сантиметров, а на нем величественно возвышаются коробки с настольной игрой за 15 000 рублей."
+            ],
+            choices: [
+                { text: "Сесть за стол рядом с Сашей и начать играть", next: 'boardgame_ending' }
+            ]
+        },
+        boardgame_ending: {
+            bgm: 'audio/victory.mp3',
+            loc: 'Элитный Настольный Клуб',
+            image: 'img/class.jpg',
+            text: [
+                "Вы рассаживаетесь вокруг стола — конечно же, Саша тут же занимает стул прямо рядом с тобой. Вова поправляет очки и достает листы персонажей. Саша берет на себя роль главного душнилы по правилам, ведь он единственный, кто вообще пытался прочитать все 300 страниц мануала.",
+                "<span class='heart-tag'>💓 Под столом:</span> Игра оказывается невероятно сложной, мрачной и глубокой. Вы кидаете 16мм кубики для Warhammer, купленные Сашей. И хотя по правилам игры каждый играет сам за себя, Саша всю партию абсолютно беспалевно подыгрывает тебе, отдает тебе лучший лут, защищает твоего персонажа от монстров и спорит с Вовой до хрипоты, доказывая, что у тебя должен быть бонус к атаке. Под столом его колено то и дело мягко касается твоего, и никто из вас не отодвигается. В какой-то момент вы встречаетесь взглядами над картой и синхронно улыбаетесь — тепло, заговорщически, будто у вас теперь есть своя маленькая тайна на двоих.",
+                "Школьные проблемы растворяются. Информатичка с её изложением кажется далеким, нелепым сном. Сливщик Максим, двуличная Даша, пикми Марсель — всё это становится абсолютно неважным, мелким и смешным.",
+                "Вы играете до глубокой ночи. А когда вы собираетесь расходиться, ты точно знаешь: это далеко не последний ваш вечер вместе. Между тобой и этим странным будущим хирургом определенно начинается что-то большее, чем просто дружба... но об этом вы поговорите уже во второй главе.",
+                "<span class='glitch-text'>ИСТИННАЯ КОНЦОВКА 4: ЭЛИТНЫЙ НАСТОЛЬНЫЙ КЛУБ (И ИСКРЫ ЧУВСТВ). ВЫ НАШЛИ СВОЮ ИСТИННУЮ СЕМЬЮ И ТОГО, КТО ВСЕГДА ПРИКРОЕТ ВАШУ СПИНУ. ПРОДОЛЖЕНИЕ СЛЕДУЕТ ВО 2 ГЛАВЕ... ❤️</span>"
+            ],
+            choices: [
+                { text: "ГЛАВА 1 ПРОЙДЕНА (НАЧАТЬ СНАЧАЛА)", next: 'start' }
+            ]
+        },
+        garage_scene: {
+            bgm: 'audio/garage_chill.mp3',
+            loc: 'Гараж Батьки',
+            image: 'img/garage.jpg',
+            checkpoint: true,
+            text: [
+                "Вы заходите в гараж. Внутри адски холодно, воняет прогорклым машинным маслом, бензином и старыми, порепанными от времени зимними шинами. Саша с невероятной, почти комичной гордостью истинного 'мамкиного инженера' втыкает в искрящуюся розетку свою 'мусорную' светодиодную ленту. Она начинает мигать ядовито-зеленым светом, придавая гаражу атмосферу уютного киберпанк-убежища для двоих.",
+                "Он заботливо стряхивает пыль с единственного теплого места на старом диване, уступая его тебе, а сам лезет под тяжелый верстак, достает оттуда бутылку настоящего зеленого абсента и разливает по пластиковым стаканчикам.",
+                "<span class='name-tag'>Саша:</span> «Я, кстати, в последний раз пил абсент в мае. Ох, бля, это был просто полнейший пиздец. Я словил жесткий бэд-трип, простоял в одной кривой, скрюченной позе ровно 40 минут, как полный, контуженный дебил. А потом бедный Сава за мной мою же блевоту убирал 5 часов кряду, пока его самого не стошнило от запаха. А Даша тогда вообще 4 часа облеванная на грязном бетонном полу валялась. Но с тобой... с тобой я контролирую дозировку, обещаю.»",
+                "Внезапно из самого темного, дальнего угла гаража, из-за стопки старых покрышек, с истошным, оглушительным, режущим слух лаем вылетает нечто маленькое, пушистое и невероятно, демонически злобное. Это Жорик! Черная, толстая чихуахуа-подушка Саши, живое воплощение чистой, концентрированной ненависти ко всему живому.",
+                "Собака-мутант бросается прямо к твоей ноге и начинает неистово, пронзительно гавкать, брызгая ядовитой слюной на твои любимые зимние ботинки.",
+                "<span class='name-tag'>Саша:</span> «Ой, бля. Жорик, фу! Сука, пошел нахуй в свою будку, тварь шерстяная! Анжела, садись скорее ко мне на диван, он будет так истошно орать и пытаться откусить тебе пятку до тех пор, пока ты не сядешь рядом. У него в голове прошиты такие ебанутые правила!»"
+            ],
+            choices: [
+                { text: "Сесть вплотную к Саше на диван, погладить Жорика и выпить абсент ❤️", next: 'absinthe_trip' },
+                { text: "Попробовать провести темный ритуал (Нужна Злая Кола и Плакат)", next: 'secret_ritual', class: 'secret-btn', requiresRitualItems: true },
+                { text: "Взбеситься и пнуть Жорика ногой (Ужасная, фатальная идея)", next: 'zhorik_death' }
+            ]
+        },
+        secret_ritual: {
+            bgm: 'audio/boss.mp3', 
+            loc: 'Гараж (Центр Пентаграммы)',
+            image: 'img/zhorik.jpg',
+            shake: true,
+            text: [
+                "Твой взгляд падает на неистово гавкающего Жорика, потом на бутылку с зеленым, ядовитым абсентом, и в голове молниеносно рождается абсолютно безумный, оккультный план, достойный лучших хоррор-игр.",
+                "Ты лихорадочно проверяешь свою сумочку. У тебя есть теплая, выдохшаяся <span style='color:#ff1493; font-weight:bold;'>🥤 Злая Кола</span> и <span style='color:#ff1493; font-weight:bold;'>📄 Порванный плакат</span>, насквозь пропитанный чистейшим, неразбавленным кринжем. Этого более чем достаточно для призыва.",
+                "Игнорируя панические крики Саши, ты срываешь крышку и выливаешь липкую Злую Колу на грязный, бетонный пол гаража, быстро и умело рисуя идеально ровную сатанинскую пентаграмму. В самый центр круга ты благоговейно кладешь порванный плакат. Затем ты берешь полный пластиковый стаканчик с крепчайшим абсентом и без колебаний выплескиваешь его содержимое прямо на опешившего чихуахуа Жорика!",
+                "Жорик, вместо того чтобы отряхнуться, издает не собачий лай, а глубокий, леденящий душу демонический рев из самых недр ада. Неоновая 'мусорная' лента Саши начинает судорожно мигать кроваво-красным светом, издавая низкий гул.",
+                "Из порванного плаката на полу начинает обильно сочиться густая, бурлящая черная субстанция — это чистый, концентрированный Кринж Пангод, накопленный поколениями школьников. Субстанция стремительно поглощает маленького Жорика, и он начинает на глазах расти, с мерзким хрустом костей превращаясь в гигантского, трехголового пса-Цербера. И самое страшное — у него вместо собачьих морд теперь огромные, искаженные яростью лица Максима-офника, пикми-Марселя и Информатички.",
+                "Саша в первобытном ужасе роняет свои очки на пол, но даже перед лицом апокалипсиса хватает тебя за руку: 'Анжела, что ты наделала, сумасшедшая?! Ты нарушила весь лор поселка! Ты призвала Великого Нормиса!'",
+                "Монстр издает оглушительный, ломающий барабанные перепонки рык, пробивая своими головами бетонную крышу гаража. Пангоды стремительно погружаются в вечную, беспросветную тьму и хаос.",
+                "<span class='glitch-text'>СЕКРЕТНАЯ КОНЦОВКА: КРОВАВЫЙ КУЛЬТ ПАНГОД. ТЫ УСПЕШНО ИСПОЛЬЗОВАЛА МЕМНЫЙ ЛУТ, ЧТОБЫ ПРИЗВАТЬ АБСОЛЮТНОЕ ЗЛО И УНИЧТОЖИТЬ ЭТОТ ПРОКЛЯТЫЙ ПОСЕЛОК РАЗ И НАВСЕГДА. ВОТ ЧТО БЫВАЕТ, КОГДА КОПАЕШЬСЯ В ШКОЛЬНЫХ МУСОРКАХ.</span>"
+            ],
+            choices: [
+                { text: "ВЕРНУТЬСЯ В АДЕКВАТНУЮ РЕАЛЬНОСТЬ (РЕСТАРТ)", next: 'start' }
+            ]
+        },
+        zhorik_death: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Гараж Батьки',
+            image: 'img/zhorik.jpg',
+            shake: true,
+            text: [
+                "Твое и без того расшатанное за день терпение стремительно падает на абсолютный, отрицательный ноль. Ты совершенно не собираешься терпеть агрессивный лай какой-то мелкой, плешивой крысы-переростка в холодном гараже. Ты с размаху, как заправский футболист Премьер-Лиги, замахиваешься ногой, чтобы отпугнуть эту гавкающую тварь.",
+                "Но Жорик — это вам не просто домашняя, диванная собака. Он — концентрированное, живое воплощение всей хтонической ярости и злобы суровых северных Пангод. Он уворачивается от твоего прямого удара с ловкостью и грацией профессионального ниндзя-ассасина и в ту же секунду мертвой, стальной хваткой впивается своими острыми, как медицинские иглы, зубами прямо тебе в незащищенную щиколотку, прокусывая джинсы.",
+                "Ты истошно, не своим голосом кричишь от пронзительной боли, теряешь хрупкое равновесие на скользком, залитом старым маслом полу и с чудовищным грохотом падаешь спиной назад, прямо на открытую металлическую полку с тяжелыми, ржавыми батиными инструментами.",
+                "По непреложному закону подлости, сверху на твою многострадальную голову с верхней полки падает тяжелый советский разводной ключ, следом летит открытая железная банка с вонючим отработанным машинным маслом и старый, тяжеленный автомобильный аккумулятор. Ты мгновенно, без звука теряешь сознание, лежа в зловонной, липкой луже из машинного масла и пролитого зеленого абсента.",
+                "Саша в полной, животной панике бросается к тебе на колени, прижимая твою голову к себе и судорожно звоня Савелию. Свидание в гараже прошло крайне неудачно, реанимационная практика Саше сегодня явно обеспечена."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        absinthe_trip: {
+            bgm: 'audio/suspense.mp3',
+            loc: 'Гараж (Глубокий Астрал на двоих)',
+            image: 'img/zhorik.jpg',
+            text: [
+                "Ты решаешь не рисковать своим здоровьем и садишься на старый, продавленный диван прямо вплотную к Саше (Жорик, как по волшебству, тут же послушно замолкает, запрыгивает тебе на колени и начинает настойчиво пытаться лизнуть прямо в губы, точь-в-точь как твой любвеобильный пес Финик по утрам в выходные). Вы чокаетесь пластиковыми стаканчиками, глядя друг другу в глаза, и выпиваете зеленый абсент. Обжигающая жидкость прокатывается по пищеводу, разливаясь приятным теплом.",
+                "Через полчаса суровая реальность начинает мягко плыть и таять по краям. Зеленый свет 'мусорной' светодиодной ленты превращается в уютный неоновый полумрак.",
+                "Вас обоих пробивает на самые откровенные разговоры, какие никогда не ведут просто друзья. Ты рассказываешь Саше, как тебя бесят люди, помешанные на типологиях ('я 2Л, а ты 3Л по ПЙ'), жалуешься на свою жесткую мать, которая однажды вдребезги разбила твой телефон строительным молотком, уничтожив 256 гигов сохранений.",
+                "Саша слушает тебя невероятно внимательно, не перебивая, а потом делится своими тяжелыми 'daddy issues', рассказывает про драку с отцом и про то, как в детстве насквозь проткнул стопу железной юлой ('Оно нихуева ты' — процитировал он воспитательницу из садика). Вы обсуждаете разницу между АФАБ и АМАБ, смеетесь над тем, что кто-то в школе считает Феврика лесбиянкой, и понимаете, что абсолютно все в этих Пангодах немного припизднутые. Но вам вдвоем в этом безумии почему-то идеально комфортно.",
+                "<span class='heart-tag'>💓 Тишина в гараже:</span> Постепенно смех стихает. От тепла и усталости твоя голова сама собой мягко опускается Саше на плечо. Ты слышишь, как он мгновенно задерживает дыхание, боясь пошевелиться и спугнуть этот момент. А потом он очень осторожно снимает с себя теплую куртку, укрывает твои плечи и неловко, едва ощутимо обнимает тебя одной рукой, прижимая к себе. Сквозь полусон ты чувствуешь, как его губы невесомо касаются твоей макушки. Вы оба еще думаете, что это просто 'крепкая дружба двух нефоров', но каждый из вас уже подсознательно знает — во второй главе всё изменится навсегда.",
+                "<span class='glitch-text'>ИСТИННАЯ КОНЦОВКА 1: ГАРАЖНАЯ ФИЛОСОФИЯ И ТЕПЛО В МОРОЗЕ. ВЫ НАШЛИ ЧЕЛОВЕКА, С КОТОРЫМ ДАЖЕ В ХОЛОДНОМ ГАРАЖЕ ПАНГОД ТЕПЛО, КАК ЛЕТОМ. ПРОДОЛЖЕНИЕ СЛЕДУЕТ ВО 2 ГЛАВЕ... ❤️</span>"
+            ],
+            choices: [
+                { text: "ГЛАВА 1 ПРОЙДЕНА (НАЧАТЬ СНАЧАЛА)", next: 'start' }
+            ]
+        },
+        dk_scene: {
+            bgm: 'audio/school_ambience.mp3',
+            loc: 'Дом Культуры',
+            image: 'img/dk.jpg',
+            checkpoint: true,
+            text: [
+                "<span class='heart-tag'>💓 Расставание на морозе:</span> Ты решаешь, что пропускать гитару нельзя. Услышав это, Саша заметно грустнеет, хотя пытается скрыть разочарование за кривой ухмылкой. Перед тем как разойтись, он вдруг делает шаг к тебе и неловко поправляет шарф у тебя на шее, чтобы не задувало горло. «Ты это... напиши мне в ВК, как закончишь, ладно, Ахметова? Я тебя встречу, а то темно уже будет». Ты киваешь, чувствуя странный укол сожаления от того, что не пошла с ним в гараж, и идешь сквозь пургу в местный Дом Культуры.",
+                "Зайдя в свой привычный, родной кабинет музыки, который насквозь пропах старой канифолью, вековой пылью и дешевым лаком для дерева, ты мгновенно впадаешь в жесткий, парализующий ступор, не веря своим глазам. За новенькой, блестящей барабанной установкой сидит вовсе не твой молодой, крутой и адекватный препод-нефор с татуировками, а... старый, поехавший на военной тематике школьный ОБЖ-шник!",
+                "Тот самый сумасшедший дед-маразматик, который с каменным лицом влепил тебе несправедливую, обидную двойку в прошлой четверти просто за то, что ты, хрупкая девочка-гуманитарий, не умеешь с закрытыми глазами за 15 секунд разбирать и собирать тяжелый, замасленный, ебаный учебный автомат Калашникова.",
+                "<span class='name-tag'>ОБЖ-шник:</span> «Ага! Попалась, Ахметова Анжела! Явилась, не запылилась, музыкантша наша неформальная! Слушай сюда мою строгую команду, боец. Пока не соберешь мне АК-47 ровно за 20 секунд, да еще и с закрытыми глазами, никакой гитары ты сегодня не получишь, я ее в сейф под ключ спрятал! Ты должна выучить все мелкие детали автомата наизусть, от зубов должно отскакивать, как таблица умножения! Родина-мать в смертельной опасности, коварное НАТО уже у ворот стоит, а вы тут, бездельники длинноволосые, всё бренчите свои бесовские, тлетворные заграничные мелодии, вместо того чтобы к окопам и рытью траншей готовиться!»",
+                "Ты с глубокой, щемящей тоской вспоминаешь прошлогоднего, буквально святого и непогрешимого ОБЖ-шника. Того самого мирового мужика, который просто мирно, тихо спал весь свой урок на самой задней парте, пускал слюни на раскрытый учебник по выживанию в экстремальных условиях и в конце четверти молча, не задавая глупых вопросов, ставил абсолютно всем в классе твердые пятерки в журнал. Верните его, пожалуйста. Срочно. Этот нынешний дед явно переиграл в 'Сталкера' или насмотрелся новостей."
+            ],
+            choices: [
+                { text: "Смириться с несправедливостью, взять автомат и начать сборку (Путь Солдата-Терпилы)", next: 'ak47_ending' },
+                { text: "Врубить комбик на максимум и оглушить маразматика дэт-металом", next: 'rock_ending' },
+                { text: "Начать яростно доказывать ему, что гитара важнее автомата (Плохая идея)", next: 'dk_death' }
+            ]
+        },
+        dk_death: {
+            bgm: 'audio/boss.mp3',
+            loc: 'Спортзал Дома Культуры',
+            image: 'img/dk.jpg',
+            shake: true,
+            text: [
+                "Ты решаешь, что молчать в тряпочку больше нельзя, и смело вступаешь с контуженным дедом в открытую, агрессивную словесную перепалку, отчаянно защищая свои творческие идеалы и свободу самовыражения.",
+                "<span class='name-tag'>Ты:</span> «Вообще-то, музыка — это высокое, вечное искусство! Она лечит человеческие души! А ваш ржавый, вонючий автомат — это пережиток прошлого века, тупое железо, несущее миру только смерть, боль и разрушение!»",
+                "Лицо старого ОБЖ-шника наливается пунцовой, нездоровой кровью, багровея на глазах. Вены на его шее вздуваются. В нем мгновенно, с громким щелчком, просыпается жесткий, бескомпромиссный, карательный дух старой советской школы прапорщиков.",
+                "<span class='name-tag'>ОБЖ-шник:</span> «ОТСТАВИТЬ РАЗГОВОРЧИКИ В СТРОЮ, АХМЕТОВА! Дискуссии он мне тут развел, пацифист недоделанный! Упала — отжалась 50 раз! Прямо здесь, на грязном полу! Считаю вслух! Раз! Два! Быстрее!»",
+                "Тебя, совершенно не привыкшую к тяжелым физическим нагрузкам сложнее поднятия тяжелого чехла с гитарой, безжалостно заставляют отжиматься от грязного, пыльного пола до полной, позорной потери пульса и потемнения в глазах. А затем, в качестве унизительного наряда вне очереди, отправляют чистить старые, вонючие советские унитазы в ДК старой, облезлой зубной щеткой. Урок по любимой гитаре безнадежно пропущен. Твои хрупкие руки и нежные пальцы болят так адски, что ты как минимум целую неделю не сможешь взять даже самый простой аккорд. Это полное, сокрушительное поражение."
+            ],
+            choices: [
+                { text: "НАЧАТЬ С ПОСЛЕДНЕГО ЧЕКПОИНТА ☠️", next: 'check_checkpoint', class: 'death-btn' }
+            ]
+        },
+        ak47_ending: {
+            bgm: 'audio/chill.mp3',
+            loc: 'Кабинет ОБЖ в ДК',
+            image: 'img/ak47.jpg',
+            text: [
+                "Ты отчетливо, всем своим уставшим существом понимаешь, что спорить с этим упертым, непробиваемым маразматиком абсолютно бесполезно. Это всё равно что кричать на глухую бетонную стену. Себе дороже выйдет, еще отжиматься заставит. Ты тяжело, сокрушенно вздыхаешь, покорно принимая свою вечную, неизменную участь 'терпилы' в этой жесткой, иерархичной системе Пангод. Молча откладываешь свой любимый, яркий медиатор на пыльную парту и брезгливо, двумя пальцами берешься за холодное, промасленное, тяжелое железо потертого учебного автомата.",
+                "Разбираешь, собираешь. Руки двигаются механически, бездушно. Затворная рама, газовая трубка со ствольной накладкой, магазин, пенал, и этот ебаный, вечно кривой металлический шомпол, который постоянно, сука, застревает в стволе и до крови царапает нежные, созданные для струн пальцы музыканта.",
+                "Каким-то невероятным, непостижимым чудом на чистом адреналине и страхе ты укладываешься ровно в дедовский жесткий временной норматив. ОБЖ-шник, шумно шмыгнув носом, утирает скупую мужскую, пропитанную искренним патриотизмом слезу грубым, жестким рукавом своего застиранного камуфляжа.",
+                "<span class='name-tag'>ОБЖ-шник:</span> «Молодец, Ахметова. Хвалю. Есть еще порох в пороховницах у нашей молодежи! Твердая, заслуженная пять в четверти тебе обеспечена лично от меня. А гитара твоя... ну, баловство это всё, несерьезно, для девочек. Оружие, железная дисциплина и защита своей Родины — вот настоящая, истинная музыка для русского уха!»",
+                "<span class='heart-tag'>💓 У крыльца ДК:</span> Ты выходишь из скрипучих дверей ДК на холодную, темную улицу с грязными, пахнущими оружейной смазкой руками и в ноль испорченным настроением. Но прямо под фонарем у входа, переминаясь с ноги на ногу на морозе, стоит Саша с двумя стаканчиками горячего чая из ларька. Увидев твое расстроенное лицо, он даже не шутит — просто молча берет твои исцарапанные шомполом пальцы, дует на них, согревая дыханием, и протягивает стаканчик. И от этого простого жеста весь тильт куда-то уходит.",
+                "<span class='glitch-text'>ИСТИННАЯ КОНЦОВКА 2: ПУТЬ ПОКОРНОГО ТЕРПИЛЫ (НО НЕ В ОДИНОЧЕСТВЕ). СИСТЕМА ПРОГНУЛА ТЕБЯ СЕГОДНЯ, НО РЯДОМ ЕСТЬ ТОТ, КТО ЗАЛЕЧИТ ТВОИ РАНЫ. ПРОДОЛЖЕНИЕ ВО 2 ГЛАВЕ... ❤️</span>"
+            ],
+            choices: [
+                { text: "ГЛАВА 1 ПРОЙДЕНА (НАЧАТЬ СНАЧАЛА)", next: 'start' }
+            ]
+        },
+        rock_ending: {
+            bgm: 'audio/victory.mp3',
+            loc: 'Кабинет Музыки в ДК',
+            image: 'img/guitar.jpg',
+            shake: true,
+            text: [
+                "Ты долго, пристально и молча смотришь на этого выжившего из ума деда в смешном камуфляже, переводишь презрительный взгляд на грязный, ржавый кусок бесполезного железа, называемый учебным автоматом, затем смотришь на свою прекрасную, изящную электрогитару... И вдруг четко, ясно, всем телом понимаешь, что с тебя официально, на все 100% хватит. Хватит с запасом на всю оставшуюся жизнь. Терпеть это унижение? Быть вечным 'нейтральным чувачком', которому на все в этом мире 'индифферентно'? Ну уж нет. Пошли они все глубоко нахуй со своими тупыми правилами и нормативами.",
+                "Ты молча, не проронив ни единого слова, с каменным, решительным лицом берешь свою гитару, резко втыкаешь толстый 'джек'-кабель в самый большой, концертный 100-ваттный ламповый комбик, стоящий в углу кабинета. Не дрогнувшей рукой выкручиваешь ручки Gain, Distortion и Volume на смертельные, запрещенные всеми женевскими конвенциями значения 10 из 10, и со всей силы, всем своим весом наступаешь на гитарную педаль дикого перегруза 'Metal Zone'.",
+                "И со всей накопившейся за этот дерьмовый, длинный день дури, злости и разочарования бьешь по натянутым металлическим струнам. Звук выстреливает из массивного динамика плотнее, громче и убойнее любой реальной, настоящей автоматной очереди. Стекла в старых деревянных окнах ДК жалобно, с надрывом дребезжат, грозясь вылететь наружу. Старая советская, потрескавшаяся штукатурка сыплется белым снегом с потолка прямо на малый барабан.",
+                "ОБЖ-шник с паническим, нечеловеческим криком падает на пол, судорожно закрывая уши руками и пытаясь инстинктивно, по-пластунски спрятаться за хлипкой деревянной партой, словно он снова, как во Вьетнаме, оказался под массированным вражеским артобстрелом в горячей точке.",
+                "<span class='name-tag'>Ты:</span> «Я СЮДА ИГРАТЬ ПРИШЛА, ДЕД! А НЕ ВОЕВАТЬ!» — яростно кричишь ты, перекрывая дикий, рычащий рев усилителя.",
+                "Ты закрываешь глаза, полностью отдаваясь мощному потоку энергии, и начинаешь виртуозно пилить самый грязный, самый жесткий и невероятно техничный дэт-метал соляк во всей своей жизни. Это больше не просто музыка. Это твой личный, громкий, оглушительный манифест против удушающей серости Пангод.",
+                "<span class='heart-tag'>💓 После концерта:</span> Когда ты с триумфом выходишь из ДК, закинув гитару за спину, у крыльца тебя уже ждет Саша — он слышал твой соляк даже через закрытые окна с улицы. Не говоря ни слова, он в порыве эмоций крепко-крепко обнимает тебя прямо посреди снегопада, уткнувшись холодным носом тебе в щеку. Вы стоите так секунд десять, оба красные как раки, делая вид, что это просто 'дружеские поздравления с крутым соляком', хотя ваши сердца бьются в унисон быстрее любого кардана в дэт-метале.",
+                "<span class='glitch-text'>ИСТИННАЯ КОНЦОВКА 3: РОК-ЗВЕЗДА СВОБОДЫ. ТЫ РАЗНЕСЛА СИСТЕМУ В ЩЕПКИ И ПОКОРИЛА СЕРДЦЕ ГЛАВНОГО ХИРУРГА ПАНГОД. ПРОДОЛЖЕНИЕ СЛЕДУЕТ ВО 2 ГЛАВЕ... ❤️</span>"
+            ],
+            choices: [
+                { text: "ГЛАВА 1 ПРОЙДЕНА (НАЧАТЬ СНАЧАЛА)", next: 'start' }
+            ]
+        }
+    };
+
+    function startGame() {
+        document.getElementById('init-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'flex';
+        lastCheckpoint = 'start';
+        resetSpecialItems();
+
+        toggleAudio(true);
+        renderScene('start');
+    }
+
+    function toggleInventory() {
+        playUISound('click');
+        const modal = document.getElementById('inventory-modal');
+        const backdrop = document.getElementById('modal-backdrop');
+        const isHidden = (modal.style.display === 'none' || modal.style.display === '');
+        modal.style.display = isHidden ? 'block' : 'none';
+        backdrop.style.display = isHidden ? 'block' : 'none';
+        setTimeout(() => { backdrop.style.opacity = isHidden ? '1' : '0'; }, 10);
+    }
+
+    function skipTyping() {
+        if (!isTyping || skipRequested) return;
+        playUISound('click');
+        skipRequested = true;
+        if (typeInterval) clearTimeout(typeInterval);
+
+        const textDiv = document.getElementById('text');
+        const cursor = document.getElementById('cursor');
+        if (cursor) cursor.remove();
+
+        while (currentParagraphs.length > 0) {
+            let line = currentParagraphs.shift();
+            let p = document.createElement('p');
+            if (line.includes('name-tag')) p.classList.add('dialogue-line');
+            if (line.includes('heart-tag')) p.classList.add('romance-line');
+            p.style.opacity = 1;
+            p.innerHTML = line;
+            textDiv.appendChild(p);
+        }
+
+        document.getElementById('reading-progress').style.width = '100%';
+        showChoices();
+    }
+
+    function showChoices() {
+        const choicesDiv = document.getElementById('choices');
+        choicesDiv.innerHTML = '';
+        
+        currentChoicesData.forEach((choice, idx) => {
+            if (choice.requiresRitualItems && (!hasCola || !hasDrawing)) return;
+            if (choice.requiresCola && !hasCola) return;
+            
+            let btn = document.createElement('button');
+            btn.className = 'choice-btn ' + (choice.class || '');
+            btn.style.display = 'block'; 
+            btn.style.animationDelay = (idx * 0.07) + 's';
+            btn.innerHTML = choice.text;
+            btn.onclick = () => {
+                // Защита от двойного нажатия
+                btn.disabled = true;
+                playUISound('click');
+                if (activePlayer.paused && currentBGM && audioEnabled) activePlayer.play().catch(e => {});
+                
+                if (choice.next === 'check_checkpoint') {
+                    showToast('Загрузка последнего чекпоинта...', '⏪');
+                    renderScene(lastCheckpoint);
+                } else {
+                    renderScene(choice.next);
+                }
+            };
+            choicesDiv.appendChild(btn);
+        });
+        isTyping = false;
+        document.getElementById('skip-btn').style.display = 'none'; 
+    }
+
+    function processNextParagraph() {
+        if (currentParagraphs.length === 0) {
+            document.getElementById('reading-progress').style.width = '100%';
+            showChoices();
+            return;
+        }
+
+        const completed = totalParagraphsInScene - currentParagraphs.length;
+        const pct = Math.round((completed / totalParagraphsInScene) * 100);
+        document.getElementById('reading-progress').style.width = pct + '%';
+
+        let line = currentParagraphs.shift();
+        let textDiv = document.getElementById('text');
+        let pNode = document.createElement('p');
+        if (line.includes('name-tag')) pNode.classList.add('dialogue-line');
+        if (line.includes('heart-tag')) pNode.classList.add('romance-line');
+        pNode.style.opacity = 1; 
+        textDiv.appendChild(pNode);
+
+        if (skipRequested) {
+            pNode.innerHTML = line;
+            processNextParagraph();
+            return;
+        }
+
+        let i = 0;
+        let tempHTML = "";
+        let tokens = line.match(/(<[^>]+>|[^<])/g) || [];
+
+        function typeChar() {
+            if (skipRequested) {
+                pNode.innerHTML = line;
+                processNextParagraph();
+                return;
+            }
+
+            if (i < tokens.length) {
+                let token = tokens[i];
+                tempHTML += token;
+                pNode.innerHTML = tempHTML + "<span id='cursor' class='cursor'></span>";
+                i++;
+                let delay = token.startsWith('<') ? 0 : 5; 
+                typeInterval = setTimeout(typeChar, delay);
+            } else {
+                const cursor = document.getElementById('cursor');
+                if (cursor) cursor.remove();
+                typeInterval = setTimeout(processNextParagraph, 200); 
+            }
+        }
+        typeChar();
+    }
+
+    function renderScene(sceneId) {
+        if (typeInterval) {
+            clearTimeout(typeInterval);
+            typeInterval = null;
+        }
+        
+        isTyping = true;
+        skipRequested = false;
+        
+        const scene = scenes[sceneId];
+        if (!scene) return;
+
+        const gameContainer = document.getElementById('game-container');
+        
+        if (scene.checkpoint && lastCheckpoint !== sceneId) {
+            lastCheckpoint = sceneId;
+            showToast('Чекпоинт сохранен', '💾');
+        }
+
+        if (scene.bgm === 'audio/boss.mp3') {
+            gameContainer.classList.add('boss-mode');
+            playUISound('danger');
+        } else {
+            gameContainer.classList.remove('boss-mode');
+        }
+
+        if (scene.shake) {
+            gameContainer.classList.remove('shake-screen');
+            void gameContainer.offsetWidth;
+            gameContainer.classList.add('shake-screen');
+        }
+        
+        if (scene.onEnter) {
+            scene.onEnter();
+        }
+
+        document.getElementById('loc-display').innerText = scene.loc;
+        document.getElementById('skip-btn').style.display = 'block';
+        document.getElementById('reading-progress').style.width = '0%';
+        
+        playBGM(scene.bgm);
+        
+        const imgElement = document.getElementById('scene-image');
+        const placeholder = document.getElementById('art-placeholder');
+        const zoomHint = document.getElementById('art-zoom-hint');
+        
+        if (scene.image) {
+            imgElement.style.opacity = '0';
+            imgElement.src = scene.image;
+            imgElement.style.display = 'block';
+            zoomHint.style.display = 'block';
+            placeholder.style.display = 'none';
+            imgElement.onload = () => { imgElement.style.opacity = '1'; };
+            imgElement.onerror = function() {
+                imgElement.style.display = 'none';
+                zoomHint.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.innerHTML = "Нужна картинка:<br><span style='color: #ff1493; font-family: monospace;'>" + scene.image + "</span>";
+            };
+        } else {
+            imgElement.style.display = 'none';
+            zoomHint.style.display = 'none';
+            placeholder.style.display = 'block';
+            placeholder.innerText = "(Картинка не требуется)";
+        }
+
+        const choicesDiv = document.getElementById('choices');
+        const textDiv = document.getElementById('text');
+        const mainScroll = document.getElementById('main-scroll-container');
+        choicesDiv.innerHTML = '';
+        textDiv.innerHTML = '';
+        
+        // Сбрасываем скролл строго в самое начало новой сцены
+        textDiv.scrollTop = 0;
+        if (mainScroll) mainScroll.scrollTop = 0;
+
+        currentParagraphs = [...scene.text];
+        totalParagraphsInScene = currentParagraphs.length || 1;
+        currentChoicesData = scene.choices;
+
+        processNextParagraph();
+    }
+</script>
+</body>
+</html>
